@@ -26,7 +26,10 @@ def meta(command: str) -> dict[str, Any]:
     evidence = ("results/", "docs/", "README.md")
     dirty_files = [
         line[3:]
-        for line in _git("status", "--porcelain", "--untracked-files=no").splitlines()
+        # not _git(): its .strip() would eat the first line's leading status column and shift the path
+        for line in subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=no"], cwd=REPO_ROOT, capture_output=True, text=True
+        ).stdout.splitlines()
         if line.strip() and not line[3:].startswith(evidence)
     ]
     return {
