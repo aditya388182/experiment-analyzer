@@ -29,10 +29,16 @@ def moto_endpoint() -> Iterator[str]:
 
 
 @pytest.fixture(autouse=True)
-def s3(moto_endpoint: str) -> Iterator[str]:
-    """Every test gets a fresh, empty bucket on the moto server."""
+def s3(request: pytest.FixtureRequest) -> Iterator[str | None]:
+    """Every unit test gets a fresh, empty bucket on an in-process moto server. Integration tests talk HTTP to
+    the real stack instead, so they get nothing here."""
+    if request.node.get_closest_marker("integration"):
+        yield None
+        return
+    moto_endpoint = request.getfixturevalue("moto_endpoint")
     settings.S3_ENDPOINT_URL = moto_endpoint
     settings.S3_PUBLIC_ENDPOINT_URL = moto_endpoint
+    settings.S3_CREATE_BUCKET = True
     storage.reset_clients()
     import requests
 
@@ -45,3 +51,19 @@ def s3(moto_endpoint: str) -> Iterator[str]:
 @pytest.fixture
 def api() -> APIClient:
     return APIClient()
+
+
+@pytest.fixture
+def seeded(s3: str) -> None:
+    from django.core.management import call_command
+
+    call_command("seed_samples", verbosity=0)
+
+
+@pytest.fixture(autouse=True)
+def _clear_cache(request: pytest.FixtureRequest) -> Iterator[None]:
+    if not request.node.get_closest_marker("integration"):
+        from django.core.cache import cache
+
+        cache.clear()
+    yield

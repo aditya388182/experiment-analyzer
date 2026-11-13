@@ -78,6 +78,11 @@ CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_IGNORE_RESULT = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
+# RabbitMQ 4.3 refuses transient non-exclusive queues (deprecated feature `transient_nonexcl_queues`), which is what
+# Celery declares by default for remote control (pidbox) and gossip/mingle events. Exclusive queues are allowed.
+# DECISIONS.md D9.
+CELERY_CONTROL_QUEUE_EXCLUSIVE = True
+CELERY_EVENT_QUEUE_EXCLUSIVE = True
 
 # S3. In dev/CI the endpoints point at moto; in production they are empty and the EC2 instance role is used.
 S3_BUCKET = env("S3_BUCKET")

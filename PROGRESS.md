@@ -41,3 +41,18 @@ All downloads were checked against the publisher's SHA-256 checksums.
   (presigned POST to moto → 204; complete → 12 columns, 20 preview rows).
 - Found: moto does not enforce the POST policy → BLOCKERS.md B1 (needs a real bucket in Phase 7).
 - Next: Phase 3 (Celery task, DuckDB ingest, idempotency, sample/analyses/sample-size/reports endpoints).
+
+### Phase 3: Celery jobs — DONE
+- `run_analysis` task (acks_late, reject_on_worker_lost, soft 120 s / hard 150 s, retries only transient S3 errors,
+  2/4/8 s backoff), DuckDB `ingest.py` (explicit VARCHAR columns, drop counts), idempotent reuse by
+  (sha256, mapping hash, abkit version), `seed_samples`, endpoints: analyses create/list/detail, sample, sample-size, reports.
+- **Check:**
+  - `make test-backend` → `72 passed, 5 deselected` (eager-mode unit tests: reproduction, reuse ×3, 7 bad-data codes,
+    drop counts, retry/backoff, give-up, no-retry on 4xx, timeout, internal, duplicate message, redelivered RUNNING
+    job, 422/404/409, 429, sample-size, reports = source JSON).
+  - `make test-integration` → `5 passed` with a real RabbitMQ + worker (`docs/checks/phase3_integration.txt`):
+    sample QUEUED→RUNNING→SUCCEEDED in 0.47 s, diff 0.07658956365153125, CI [0.06995314760976148, 0.083225979693301],
+    SRM p 0.9036929575604196; second POST → 200 `reused_from`; re-uploaded copy reused by hash on the worker;
+    bad data → FAILED `SINGLE_ARM`, attempts 1 (worker log shows one receive, no retry).
+- Found and fixed: RabbitMQ 4.3 refuses Celery's transient control queues (D9); DuckDB sniffer mis-reading ragged files (D10).
+- Next: Phase 4 (React frontend).

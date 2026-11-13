@@ -44,7 +44,8 @@ class Analysis(models.Model):
     error_message = models.TextField(blank=True)
     abkit_version = models.CharField(max_length=20, blank=True)
     git_sha = models.CharField(max_length=40, blank=True)
-    attempts = models.PositiveSmallIntegerField(default=0)
+    attempts = models.PositiveSmallIntegerField(default=0)  # task runs, including retries and redeliveries
+    timings = models.JSONField(null=True, blank=True)  # milliseconds per step
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     finished_at = models.DateTimeField(null=True, blank=True)

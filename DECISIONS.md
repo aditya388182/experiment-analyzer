@@ -76,3 +76,39 @@ test checks it against the lab JSON. On Hillstrom the pooled corr is 0.065 and t
   Phase 2 the API ran on the host (gunicorn) against the Compose postgres, rabbitmq and moto (`make run-api`).
 - **Ports:** every Compose port is published on 127.0.0.1 only (owner's instruction). On the EC2 box, use an SSH tunnel.
 - **Health:** `/api/health` checks the DB (`SELECT 1`) and the broker (AMQP connect, 2 s timeout) and returns 503 if either fails.
+
+## D9. RabbitMQ 4.3 and Celery's transient queues (VERSIONS.md concern 4 was wrong)
+VERSIONS.md said Celery's remote-control queues are "still allowed by default in 4.3". They are not: the worker
+crashed in a restart loop with `Queue.declare: (541) INTERNAL_ERROR - Feature transient_nonexcl_queues is deprecated`.
+Celery declares transient, non-exclusive queues for remote control (pidbox) and gossip/mingle events.
+Fix, without re-enabling a deprecated RabbitMQ feature: `CELERY_CONTROL_QUEUE_EXCLUSIVE = True` and
+`CELERY_EVENT_QUEUE_EXCLUSIVE = True` (both options exist in Celery 5.6). Verified: the worker starts and
+`celery inspect ping` gets `pong`. The task queue itself stays the durable classic `celery` queue. VERSIONS.md concern 4 is corrected.
+
+## D10. Phase 3 details
+- **Reuse must also match abkit_version.** The idempotency key is sha256(file) + sha256(canonical mapping) as specified,
+  and reuse additionally requires the same `abkit_version`, so a stats fix in a new abkit release is never hidden by
+  an old stored result.
+- **Immediate reuse at POST.** When the same stored object (same upload id, or the same sample) already has a
+  SUCCEEDED analysis with the same mapping, the API creates a new SUCCEEDED row with `reused_from` set and returns 200.
+  A new row, rather than the old id, keeps "every POST gets its own shareable link that says where it came from".
+  Different uploads of identical bytes are matched by hash in the worker. `reused_from` always points at the
+  original computation (never at another reuse).
+- **DuckDB reads with explicit types and the sniffer off.** A ragged row late in a file made DuckDB's auto-detect
+  silently take that row as the header. Now the header is parsed with Python's `csv`, every column is declared
+  VARCHAR, `auto_detect = false`, `strict_mode = true`, so a ragged row fails with `BAD_CSV` and the line number.
+- **Extra error codes:** `NO_USABLE_ROWS` (every row dropped; message lists the reasons), `BAD_CSV`,
+  `MAPPING_COLUMN_MISSING`, `OBJECT_MISSING`, `UPLOAD_GONE`, `STORAGE_UNAVAILABLE` (3 retries exhausted), `TIMEOUT`
+  (soft limit), `INTERNAL`.
+- **Transient = network errors and S3 SlowDown/5xx/RequestTimeout.** AccessDenied and other 4xx are not retried
+  (they become INTERNAL and are logged). Backoff is 2, 4 and 8 s.
+- **`attempts`** (extra model field, shown in the API) counts task runs, so "not retried" is visible: bad data shows `attempts: 1`.
+- **Eager-mode tests drive retries by hand.** Celery eager mode raises `Retry` rather than re-running the task, so
+  the unit test calls `apply(retries=k)` for each redelivery and checks the backoff (2 s, 4 s). The real broker path
+  is covered by `make test-integration`.
+- **Integration test runs against a fresh `analyzer_it` database** (dropped and recreated by the script inside the
+  Compose Postgres), so reuse state from earlier runs cannot hide real work. The API runs on 127.0.0.1:8001.
+- **Liveness vs readiness:** `/api/health/live` (no dependency checks) for liveness probes; `/api/health` (DB +
+  broker) for readiness. A broker outage then takes the pod out of the Service without restarting it.
+- **Reports:** the cards return a `sources` map (output key → `file:key.path`), and the test checks every number in the
+  response against its source, 40+ values.

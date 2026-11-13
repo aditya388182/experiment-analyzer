@@ -1,0 +1,40 @@
+== fresh database analyzer_it
+2026-11-13 20:12:36,303 INFO botocore.credentials Found credentials in environment variables.
+samples/hillstrom.csv: already present (3900976 bytes)
+== start worker and API (logs in /tmp/tmp.JlveSpx068)
+== pytest -m integration
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0 -- /home/ubuntu/experiment-analyzer/backend/.venv/bin/python
+cachedir: .pytest_cache
+django: version: 5.2.19, settings: config.settings_test (from ini)
+hypothesis profile 'default'
+rootdir: /home/ubuntu/experiment-analyzer/backend
+configfile: pyproject.toml
+plugins: django-4.14.0, hypothesis-6.170.14, cov-7.1.0
+collecting ... collected 5 items
+
+analyzer/tests/test_integration.py::test_health_sees_db_and_broker PASSED
+analyzer/tests/test_integration.py::test_sample_runs_on_worker_and_reproduces_lab 
+sample: ['QUEUED', 'RUNNING', 'SUCCEEDED'] in 0.47s; timings {'stats_ms': 15, 'total_ms': 323, 'ingest_ms': 115, 'queued_ms': 60, 'download_ms': 124}
+verdict: Mens E-Mail increased visit rate by 7.66 percentage points (95% CI 7.00 to 8.32) vs No E-Mail. Womens E-Mail increased visit rate by 4.52 percentage points (95% CI 3.89 to 5.16) vs No E-Mail.
+mens visit diff 0.07658956365153125 CI [0.06995314760976148, 0.083225979693301]
+SRM p 0.9036929575604196
+PASSED
+analyzer/tests/test_integration.py::test_second_post_of_same_sample_returns_reused_from 
+second POST: HTTP 200, reused_from 4e7225e8-469e-43b9-8719-51d773e22b32
+PASSED
+analyzer/tests/test_integration.py::test_same_file_uploaded_is_reused_by_hash_on_worker 
+re-uploaded file: worker matched sha256 27bab8c5d366..., reused_from 4e7225e8-469e-43b9-8719-51d773e22b32
+PASSED
+analyzer/tests/test_integration.py::test_bad_data_fails_with_code_and_is_not_retried 
+bad data: SINGLE_ARM: Found 1 arm(s) in the variant column; an experiment needs at least 2. (attempts 1)
+PASSED
+
+============================== 5 passed in 4.49s ===============================
+== worker log: task lines
+2026-11-13 20:12:42,917 INFO celery.worker.strategy Task analyzer.tasks.run_analysis[ae4b28a5-9b94-47f9-bb2f-aeb67ea9be78] received
+2026-11-13 20:12:43,215 INFO celery.app.trace Task analyzer.tasks.run_analysis[ae4b28a5-9b94-47f9-bb2f-aeb67ea9be78] succeeded in 0.2976366919999691s: 'SUCCEEDED'
+2026-11-13 20:12:43,624 INFO celery.worker.strategy Task analyzer.tasks.run_analysis[b27d3411-989f-4e99-91eb-e4c247d655b9] received
+2026-11-13 20:12:43,683 INFO celery.app.trace Task analyzer.tasks.run_analysis[b27d3411-989f-4e99-91eb-e4c247d655b9] succeeded in 0.057787731999951575s: 'SUCCEEDED'
+2026-11-13 20:12:43,997 INFO celery.worker.strategy Task analyzer.tasks.run_analysis[209cd27c-611a-4363-897b-89514af791dc] received
+2026-11-13 20:12:44,058 INFO celery.app.trace Task analyzer.tasks.run_analysis[209cd27c-611a-4363-897b-89514af791dc] succeeded in 0.06065140399982738s: 'FAILED'

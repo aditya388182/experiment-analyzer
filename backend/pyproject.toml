@@ -38,7 +38,7 @@ abkit = { path = "../abkit", editable = true }
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings_test"
 testpaths = ["analyzer/tests"]
-addopts = "-ra"
+addopts = "-ra -m \"not integration\""
 markers = ["integration: needs a real RabbitMQ broker and Celery worker (make test-integration)"]
 
 [tool.ruff]

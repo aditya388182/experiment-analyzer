@@ -32,3 +32,7 @@ run-api: ## API on the host against the infra containers
 
 curl-walkthrough: ## Phase 2 check: presigned POST upload to moto via curl
 	scripts/curl_walkthrough.sh
+
+.PHONY: test-integration
+test-integration: ## real RabbitMQ + Celery worker + API end to end (needs `make infra-up`)
+	scripts/integration.sh
