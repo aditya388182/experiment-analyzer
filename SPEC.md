@@ -387,7 +387,7 @@ Version `abkit` with semver (`0.1.0`), and store the version on each analysis.
 | Item | Notes |
 |---|---|
 | GitHub repo `experiment-analyzer` (public) | GitHub Container Registry for images (make the packages public, or add an image pull secret) |
-| Local tools | Python 3.12, Node.js LTS, Docker Desktop, kubectl, Helm 3, k3d (local Kubernetes for testing the chart), AWS CLI v2, Make |
+| Local tools | Python 3.12, Node.js LTS, Docker Desktop, kubectl, Helm 4 (decided in Phase 0, was Helm 3; see VERSIONS.md), k3d (local Kubernetes for testing the chart), AWS CLI v2, Make |
 | AWS | **Set a budget alarm first.** One S3 bucket. One EC2 instance (Ubuntu LTS, t3.medium class, 4 GB; k3s + Postgres + RabbitMQ + 3 app pods need the headroom; check current pricing). An Elastic IP. An IAM role for the instance. |
 | Domain | Point `p3.<domain>` (A record) at the Elastic IP. Needed for HTTPS via Let's Encrypt. |
 | Local S3 | `motoserver/moto` in Docker Compose for dev and CI. If presigned POST behaves differently from AWS there, use a real dev bucket instead. |
