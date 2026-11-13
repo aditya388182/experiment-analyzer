@@ -33,6 +33,9 @@ jobs:
       - name: ruff (backend)
         working-directory: backend
         run: uv run --frozen ruff check . && uv run --frozen ruff format --check .
+      - name: ruff (scripts)
+        working-directory: backend
+        run: uv run --frozen ruff check ../scripts && uv run --frozen ruff format --check ../scripts
 
   abkit:
     runs-on: ubuntu-24.04

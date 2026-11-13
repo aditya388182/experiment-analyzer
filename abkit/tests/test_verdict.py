@@ -31,11 +31,10 @@ def _cmp(diff, lo, hi, treatment="B", significant=True, p_holm=1e-5, rel=0.5):
 
 
 def test_binary_increase():
-    r = _result([_cmp(0.07659, 0.06995, 0.08323, treatment="Mens E-Mail")])
-    r["control_label"] = "No E-Mail"
-    assert verdict(r) == (
-        "Mens E-Mail increased visit rate by 7.66 percentage points (95% CI 7.00 to 8.32) vs No E-Mail."
-    )
+    # Made-up inputs: this tests the template, not the lab result (that lives in test_lab_reproduction.py).
+    r = _result([_cmp(0.04321, 0.03456, 0.05187, treatment="Email A")])
+    r["control_label"] = "No email"
+    assert verdict(r) == "Email A increased visit rate by 4.32 percentage points (95% CI 3.46 to 5.19) vs No email."
 
 
 def test_binary_decrease():

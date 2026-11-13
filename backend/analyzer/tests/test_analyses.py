@@ -335,7 +335,7 @@ def test_rate_limit_429(api, seeded, run, monkeypatch):
         assert run(api.post, "/api/analyses/sample/hillstrom", {}, format="json").status_code in (200, 202)
     r = api.post("/api/analyses/sample/hillstrom", {}, format="json")
     assert r.status_code == 429
-    assert r.json()["error"]["code"] == "RATE_LIMITED" and "30 per hour" in r.json()["error"]["message"]
+    assert r.json()["error"]["code"] == "RATE_LIMITED" and "the limit is 2 per hour" in r.json()["error"]["message"]
     assert api.get("/api/analyses").status_code == 200  # reads are not throttled
 
 

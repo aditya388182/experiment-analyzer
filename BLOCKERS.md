@@ -81,7 +81,12 @@ Repo → **Settings → Secrets and variables → Actions**:
    `ssh ubuntu@<eip> 'sudo k3s kubectl -n experiment-analyzer get pods,hpa,ingress,certificate'`.
 3. Download the `deploy_smoke` artifact and commit it as `results/deploy_smoke.json`; then run `make bullets` (it will
    no longer print MISSING for the deploy numbers).
-4. Optional: `make hpa-burst BASE_URL=https://p3.<domain>` while watching `kubectl get hpa -w`, for `results/hpa.json`.
+4. Check the per-IP rate limit sees real client IPs (bootstrap.sh sets Traefik `externalTrafficPolicy: Local`):
+   `ssh ubuntu@<eip> 'sudo k3s kubectl -n experiment-analyzer logs deploy/ea-experiment-analyzer-api | tail -3'` after a
+   request from your laptop. The gunicorn access log line must show your public IP, not 10.42.x.x. If it shows a
+   cluster IP, every visitor shares one 30/hour limit; tell me and I will fix the proxy settings.
+5. Optional: a production HPA burst. `scripts/hpa_burst.sh` runs against the current kubectl context (on the box:
+   `KUBECONFIG=/etc/rancher/k3s/k3s.yaml`). It writes `results/hpa.json`, replacing the k3d measurement.
 
 ## B8. Lab repo URL and commit (Model Reports source)
 `backend/reports/data/SOURCE.md` and `GET /api/reports` say "lab build of 2026-11-05 (lab_inputs/)" because the lab repo

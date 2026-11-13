@@ -23,6 +23,13 @@ class ApiError(exceptions.APIException):
         self.message = message
 
 
+def _analysis_rate() -> str:
+    """The configured analysis rate, e.g. "30/hour" (env ANALYSIS_RATE), so the 429 message cannot drift from it."""
+    from rest_framework.throttling import ScopedRateThrottle
+
+    return ScopedRateThrottle.THROTTLE_RATES.get("analysis_create") or "30/hour"
+
+
 def error_body(code: str, message: str) -> dict[str, dict[str, str]]:
     return {"error": {"code": code, "message": message}}
 
@@ -49,8 +56,9 @@ def exception_handler(exc: Exception, context: dict[str, Any]) -> Response | Non
         )
     if isinstance(exc, exceptions.Throttled):
         wait = f" Try again in {int(exc.wait)} seconds." if exc.wait else ""
+        num, _, period = _analysis_rate().partition("/")
         return Response(
-            error_body("RATE_LIMITED", f"Too many analyses from your address; the limit is 30 per hour.{wait}"),
+            error_body("RATE_LIMITED", f"Too many analyses from your address; the limit is {num} per {period}.{wait}"),
             status=status.HTTP_429_TOO_MANY_REQUESTS,
         )
     if isinstance(exc, exceptions.ParseError):

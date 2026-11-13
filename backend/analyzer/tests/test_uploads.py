@@ -148,6 +148,18 @@ def test_health_503_when_broker_down(api, settings):
     assert r.json()["broker"] is False and r.json()["db"] is True
 
 
+def test_health_503_when_db_down(api, monkeypatch):
+    from django.db import connection
+
+    def broken():
+        raise OSError("database is down")
+
+    monkeypatch.setattr(connection, "cursor", broken)
+    r = api.get("/api/health")
+    assert r.status_code == 503
+    assert r.json()["db"] is False and r.json()["status"] == "degraded"
+
+
 def test_unknown_route_is_json_404(client):
     r = client.get("/api/nope")
     assert r.status_code == 404

@@ -45,7 +45,11 @@ describe("analysis page", () => {
     renderRoute(`/analyses/${visit.id}`);
     const verdict = await screen.findByTestId("verdict");
     expect(verdict).toHaveTextContent(visit.result?.verdict ?? "missing");
-    expect(verdict).toHaveTextContent("7.66 percentage points (95% CI 7.00 to 8.32)");
+    // Expected text built from the fixture (a real API response), never typed: diff and CI in percentage points.
+    const first = visit.result?.comparisons[0];
+    if (!first) throw new Error("fixture has no comparisons");
+    const pts = (x: number) => (x * 100).toFixed(2);
+    expect(verdict).toHaveTextContent(`${pts(first.diff)} percentage points (95% CI ${pts(first.ci_low)} to ${pts(first.ci_high)})`);
     const banner = screen.getByRole("status", { name: "" });
     expect(within(banner).getByText("Traffic split looks healthy")).toBeInTheDocument();
     expect(screen.getByTestId("cuped-message")).toHaveTextContent("CUPED not helpful here");
@@ -77,7 +81,9 @@ describe("analysis page", () => {
     renderRoute(`/analyses/${visit.id}`);
     expect(await screen.findByTestId("cuped-message")).toHaveTextContent("CUPED helpful");
     expect(screen.getByText("36.00%")).toBeInTheDocument();
-    expect(screen.getByText(/^Mens E-Mail: 7.66 pts \(CI/)).toBeInTheDocument();
+    const c0 = r.comparisons[0];
+    if (!c0) throw new Error("fixture has no comparisons");
+    expect(screen.getByText(`${c0.treatment}: ${(c0.diff * 100).toFixed(2)} pts (CI ${(c0.ci_low * 100).toFixed(2)} pts to ${(c0.ci_high * 100).toFixed(2)} pts)`)).toBeInTheDocument();
   });
 
   it("explains a failed analysis and what to fix", async () => {

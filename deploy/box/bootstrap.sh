@@ -57,6 +57,21 @@ curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="$K3S_VERSION" sh -s - \
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 until kubectl get nodes 2>/dev/null | grep -q " Ready"; do sleep 3; done
 
+# Keep the visitor's IP: with the default externalTrafficPolicy=Cluster, Traefik can see the node IP instead,
+# and the API's per-IP rate limit (30 analyses/hour) would be shared by every visitor.
+cat > /var/lib/rancher/k3s/server/manifests/traefik-config.yaml <<'EOF'
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    service:
+      spec:
+        externalTrafficPolicy: Local
+EOF
+
 # --- Helm (checksum-verified)
 cd "$(mktemp -d)"
 curl -fsSLO "https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz"
