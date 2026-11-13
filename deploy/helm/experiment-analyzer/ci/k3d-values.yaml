@@ -1,0 +1,26 @@
+# Local k3d cluster (make k3d-up && make k3d-deploy). Images are built locally and imported into the cluster.
+image:
+  registry: ""
+  api: experiment-analyzer-api
+  web: experiment-analyzer-web
+  tag: local
+  pullPolicy: Never
+config:
+  allowedHosts: "localhost,127.0.0.1"
+  s3Bucket: experiment-analyzer-k3d
+  s3CreateBucket: true
+secrets:
+  create: true          # random values generated in-cluster; nothing secret in this file
+devS3:
+  enabled: true
+  resources:            # moto keeps objects in memory; the HPA burst stores 20 files of ~16 MB
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 2Gi }
+postgres:
+  storage: 1Gi
+rabbitmq:
+  storage: 1Gi
+ingress:
+  host: ""              # match any host; k3d maps localhost:8081 to Traefik
+  tls:
+    enabled: false

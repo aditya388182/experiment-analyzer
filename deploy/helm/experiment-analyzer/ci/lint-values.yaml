@@ -1,0 +1,5 @@
+# Production-shaped values for `helm lint` / kubeconform in CI. The real tag and bucket come from deploy.yml.
+image:
+  tag: ci-lint
+config:
+  s3Bucket: example-bucket

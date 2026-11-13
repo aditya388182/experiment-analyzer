@@ -1,0 +1,37 @@
+{
+  "commit": "f0d1cdd6db2dc7d4d3e9f695e139ee5036e4b975",
+  "dirty": true,
+  "generated_at_utc": "2026-11-13T21:07:01Z",
+  "command": "make k3d-smoke",
+  "base_url": "http://127.0.0.1:8081",
+  "ok": true,
+  "health": {
+    "status": "ok",
+    "db": true,
+    "broker": true
+  },
+  "http_status": {
+    "GET /": 200,
+    "GET /api/health": 200,
+    "POST /api/analyses/sample/hillstrom": 202,
+    "GET /api/analyses/{id}": 200
+  },
+  "analysis_id": "2e5c9217-f8a7-44a1-852d-54cb0c7449a6",
+  "statuses_seen": [
+    "QUEUED",
+    "SUCCEEDED"
+  ],
+  "reused_from": null,
+  "submit_to_terminal_seconds": 0.569,
+  "server_timings_ms": {
+    "stats_ms": 20,
+    "total_ms": 440,
+    "ingest_ms": 173,
+    "queued_ms": 78,
+    "download_ms": 158
+  },
+  "verdict": "Mens E-Mail increased visit rate by 7.66 percentage points (95% CI 7.00 to 8.32) vs No E-Mail. Womens E-Mail increased visit rate by 4.52 percentage points (95% CI 3.89 to 5.16) vs No E-Mail.",
+  "error": null,
+  "git_sha": "local",
+  "abkit_version": "0.1.0"
+}

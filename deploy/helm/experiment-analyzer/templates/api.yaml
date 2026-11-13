@@ -1,0 +1,56 @@
+{{- $c := dict "root" . "component" "api" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ea.fullname" . }}-api
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  selector: {{- include "ea.selector" $c | nindent 4 }}
+  ports:
+    - { name: http, port: 8000, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ea.fullname" . }}-api
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels: {{- include "ea.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "ea.selector" $c | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "ea.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- include "ea.podSecurity" (dict "uid" 10001 "gid" 10001) | nindent 8 }}
+      containers:
+        - name: api
+          image: {{ include "ea.image" (dict "root" . "name" .Values.image.api) }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["gunicorn", "config.wsgi", "--bind", "0.0.0.0:8000", "--workers", "{{ .Values.api.workers }}",
+                 "--timeout", "30", "--worker-tmp-dir", "/tmp", "--access-logfile", "-"]
+          ports: [{ name: http, containerPort: 8000 }]
+          {{- include "ea.appEnv" . | nindent 10 }}
+          securityContext: {{- include "ea.containerSecurity" . | nindent 12 }}
+          # Ready = database and broker reachable (/api/health). Alive = the process answers (/api/health/live), so a
+          # broker outage takes the pod out of the Service without restarting it.
+          readinessProbe:
+            httpGet: { path: /api/health, port: http, httpHeaders: [{ name: Host, value: localhost }] }
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: { path: /api/health/live, port: http, httpHeaders: [{ name: Host, value: localhost }] }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources: {{- toYaml .Values.api.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: {} }

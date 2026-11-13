@@ -1,0 +1,57 @@
+# Migrations + sample seeding as a Helm hook. post-install (not pre-install): on a first install the in-chart
+# Postgres does not exist yet during pre-install hooks. pre-upgrade: on every upgrade the schema moves before the new
+# api/worker pods start. See DECISIONS.md D13.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ea.fullname" . }}-migrate
+  labels: {{- include "ea.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,pre-upgrade
+    helm.sh/hook-weight: "0"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ea.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "ea.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- include "ea.podSecurity" (dict "uid" 10001 "gid" 10001) | nindent 8 }}
+      initContainers:
+        - name: wait-for-postgres
+          image: {{ include "ea.image" (dict "root" . "name" .Values.image.api) }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - python
+            - -c
+            - |
+              import socket, sys, time
+              for _ in range(120):
+                  try:
+                      socket.create_connection(("{{ include "ea.fullname" . }}-postgres", 5432), 2).close(); sys.exit(0)
+                  except OSError:
+                      time.sleep(2)
+              sys.exit("postgres not reachable after 240 s")
+          securityContext: {{- include "ea.containerSecurity" . | nindent 12 }}
+          resources: {{- toYaml .Values.migrate.resources | nindent 12 }}
+      containers:
+        - name: migrate
+          image: {{ include "ea.image" (dict "root" . "name" .Values.image.api) }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh", "-c", "python manage.py migrate --no-input && python manage.py createcachetable && python manage.py seed_samples"]
+          {{- include "ea.appEnv" (dict "root" . "configMap" (printf "%s-migrate" (include "ea.fullname" .))) | nindent 10 }}
+          securityContext: {{- include "ea.containerSecurity" . | nindent 12 }}
+          resources: {{- toYaml .Values.migrate.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: {} }

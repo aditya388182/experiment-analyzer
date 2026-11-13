@@ -85,6 +85,36 @@ lint: lint-python lint-frontend lint-helm ## ruff, eslint, tsc, helm lint, kubec
 
 ci: lint test test-integration build-images ## the same checks as .github/workflows/ci.yml, run locally
 
+# ---------- local Kubernetes (k3d) ----------
+K3D_CLUSTER := ea
+K3S_IMAGE := rancher/k3s:v1.36.6-k3s1@sha256:88d3fac10eb4a429d3c5275f4868fe4b13620f6bbca5bdb5dca0627ac76ae2a0
+CHART := deploy/helm/experiment-analyzer
+.PHONY: k3d-up k3d-deploy k3d-down k3d-smoke
+k3d-up: ## local k3s 1.36 cluster; API on 127.0.0.1:6550, ingress on 127.0.0.1:8081
+	k3d cluster create $(K3D_CLUSTER) --image $(K3S_IMAGE) --servers 1 --agents 0 \
+	  --api-port 127.0.0.1:6550 -p "127.0.0.1:8081:80@loadbalancer" --wait --timeout 180s
+	kubectl config use-context k3d-$(K3D_CLUSTER)
+
+k3d-deploy: build-images ## build images, import them into k3d, helm upgrade --install with ci/k3d-values.yaml
+	k3d image import -c $(K3D_CLUSTER) experiment-analyzer-api:local experiment-analyzer-web:local
+	helm upgrade --install ea $(CHART) -n experiment-analyzer --create-namespace \
+	  -f $(CHART)/ci/k3d-values.yaml --wait --timeout 10m
+	# The tag stays "local", so restart to pick up freshly imported images.
+	kubectl -n experiment-analyzer rollout restart deploy/ea-experiment-analyzer-api deploy/ea-experiment-analyzer-worker deploy/ea-experiment-analyzer-web
+	kubectl -n experiment-analyzer rollout status deploy/ea-experiment-analyzer-api deploy/ea-experiment-analyzer-worker deploy/ea-experiment-analyzer-web --timeout 5m
+	kubectl -n experiment-analyzer get pods,hpa
+
+k3d-smoke: ## sample analysis through the k3d ingress (127.0.0.1:8081)
+	python3 scripts/smoke.py http://127.0.0.1:8081 --out docs/checks/k3d_smoke.json --command "make k3d-smoke"
+
+k3d-down:
+	k3d cluster delete $(K3D_CLUSTER)
+
+# ---------- Phase 7 helpers (need your AWS credentials; never run by Claude) ----------
+.PHONY: s3-policy-check
+s3-policy-check: ## real-S3 check of the presigned POST policy: make s3-policy-check S3_BUCKET=<bucket>
+	cd backend && S3_BUCKET=$(S3_BUCKET) uv run python ../scripts/s3_policy_check.py
+
 results-tests: ## run every suite with JUnit output and write results/tests.json
 	mkdir -p build
 	cd abkit && uv run pytest -q --junitxml=../build/junit-abkit.xml

@@ -154,3 +154,45 @@ Fix, without re-enabling a deprecated RabbitMQ feature: `CELERY_CONTROL_QUEUE_EX
 - **results/tests.json** comes from JUnit XML written by every suite (`make results-tests`, `scripts/test_counts.py`).
 - **Frontend test teardown order:** unmount, then reset MSW handlers. The other order let a still-polling page fire
   one unhandled request (a rare race, seen once in about 10 runs).
+
+## D13. Phase 6 (Helm chart) details
+- **Migration hook is `post-install,pre-upgrade`, not `pre-install,pre-upgrade`.** SPEC says pre-install, but Postgres
+  is a StatefulSet in the same chart, and Helm runs pre-install hooks before it creates any regular resource. A
+  pre-install migration would wait for a database that does not exist yet. On upgrades the hook still runs *before* the
+  new api/worker pods (pre-upgrade). On the first install the API answers health checks before migrating but has no
+  tables for a few seconds. An initContainer in the Job waits for Postgres's TCP port.
+- **The migrate Job has its own hook ConfigMap.** Found on k3d: pre-upgrade hooks run before Helm updates regular
+  resources, so a Job reading the main ConfigMap got the *old* settings and crashed. Both ConfigMaps render from one
+  template (`ea.configData`), so they cannot differ.
+- **Numbers in values.yaml go through `int64`.** Found on k3d: Helm parses 52428800 as a float and `quote` rendered
+  "5.24288e+07", which crashed Django's int parsing. kubeconform cannot see this (it is a valid string), so
+  `scripts/helm_check.sh` also checks the rendered ConfigMap holds plain integers.
+- **Secrets:** none in values.yaml. Production references `secrets.existingSecret` (created by deploy.yml from GitHub
+  secrets). Local clusters use `secrets.create=true`: random values generated in-cluster, kept across upgrades by
+  `lookup`, and annotated `helm.sh/resource-policy: keep` so a reinstall still matches the database on the PVC.
+  `DATABASE_URL` and `CELERY_BROKER_URL` are built in the pod spec with `$(POSTGRES_PASSWORD)` expansion.
+- **Probes:** api readiness `/api/health` (DB + broker), liveness `/api/health/live` (process only), so a broker outage
+  takes the API out of the Service without restarts. Probes send `Host: localhost` (in DJANGO_ALLOWED_HOSTS), because
+  the kubelet's default Host is the pod IP. Worker readiness = broker TCP reachable; liveness = `celery inspect ping`
+  every 60 s. Postgres: `pg_isready`. RabbitMQ: `check_port_connectivity` / `ping`. Web: `/healthz`. The migrate Job
+  pod has no probes: probes do not apply to run-to-completion Job pods, so `backoffLimit` and `activeDeadlineSeconds`
+  bound it instead.
+- **Hardening:** every pod runs non-root with seccomp RuntimeDefault, no privilege escalation, all capabilities dropped,
+  and a read-only root filesystem with an emptyDir `/tmp`. RabbitMQ is the exception: it writes generated config under
+  /etc. The ServiceAccount does not mount a token. The worker gets `terminationGracePeriodSeconds: 160`, longer than
+  the 150 s hard limit, so a scale-down lets a running job finish.
+- **Ingress:** one Ingress, `/api` → api:8000 and `/` → web:8080, class traefik, cert-manager annotation when TLS is on.
+  No forced HTTP→HTTPS redirect yet: a global Traefik redirect can interfere with the HTTP-01 challenge on the first
+  issuance. It can be added after the certificate exists (BLOCKERS.md B7).
+- **k3d:** `devS3.enabled` adds an in-cluster moto (local only). Browser uploads are not reachable from the host in
+  k3d because presigned URLs point at the in-cluster moto Service. The Check uses the sample analysis, which needs no browser upload.
+- **The k3d API server and ingress are bound to 127.0.0.1** (owner's instruction to keep ports local).
+
+## D14. S3 answers 403 for missing keys under the production IAM policy
+Found while writing `deploy/aws/iam-policy.json`. SPEC section 12 grants only PutObject/GetObject (HeadObject is covered by
+GetObject) on `uploads/*` and `samples/*`, with no `s3:ListBucket`. Without ListBucket, S3 returns **403**, not 404, for a
+key that does not exist. moto always says 404, so the tests could not show it. Before the fix, production would have
+answered `/complete` with 500 instead of 409, crashed `seed_samples` on the first deploy, and called an expired upload
+INTERNAL. Now `storage.is_missing()` treats 403/AccessDenied like 404 for HEAD and GET, logs it, and the tests cover
+both. The cost: a real permission misconfiguration also reads as "missing". The alternative was adding s3:ListBucket on
+the bucket, which widens the role, so I kept the narrower policy.

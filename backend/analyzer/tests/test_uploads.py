@@ -166,3 +166,17 @@ def test_cors_preflight_for_dev_origin(client):
     assert r["Access-Control-Allow-Origin"] == "http://localhost:5173"
     r = client.options("/api/uploads", HTTP_ORIGIN="http://evil.example", HTTP_ACCESS_CONTROL_REQUEST_METHOD="POST")
     assert "Access-Control-Allow-Origin" not in r
+
+
+def test_complete_is_409_when_s3_answers_403_for_a_missing_key(api, monkeypatch):
+    """Production S3 without s3:ListBucket returns 403 (not 404) for a key that does not exist."""
+    from botocore.exceptions import ClientError
+
+    body = _create(api).json()
+
+    def forbidden(**kwargs):
+        raise ClientError({"Error": {"Code": "403", "Message": "Forbidden"}}, "HeadObject")
+
+    monkeypatch.setattr(storage.client(), "head_object", forbidden)
+    r = api.post(f"/api/uploads/{body['upload_id']}/complete")
+    assert r.status_code == 409 and r.json()["error"]["code"] == "OBJECT_MISSING"

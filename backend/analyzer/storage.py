@@ -66,12 +66,23 @@ def presigned_post(key: str, max_bytes: int, expires_in: int) -> dict[str, Any]:
     )
 
 
+# The production IAM policy grants only PutObject/GetObject on uploads/* and samples/* (no s3:ListBucket). Without
+# ListBucket, S3 answers 403 instead of 404 for a key that does not exist, so 403 is read as "missing" here.
+MISSING_CODES = {"404", "NoSuchKey", "NotFound", "403", "AccessDenied", "Forbidden"}
+
+
+def is_missing(exc: BaseException) -> bool:
+    return isinstance(exc, ClientError) and str(exc.response.get("Error", {}).get("Code")) in MISSING_CODES
+
+
 def head_size(key: str) -> int | None:
-    """Object size in bytes, or None if it does not exist."""
+    """Object size in bytes, or None if it does not exist (or, without ListBucket, cannot be seen)."""
     try:
         resp = client().head_object(Bucket=settings.S3_BUCKET, Key=key)
     except ClientError as e:
-        if e.response.get("Error", {}).get("Code") in ("404", "NoSuchKey", "NotFound"):
+        if is_missing(e):
+            if str(e.response.get("Error", {}).get("Code")) in ("403", "AccessDenied", "Forbidden"):
+                log.info("HEAD %s returned 403: treated as missing (no ListBucket permission by design)", key)
             return None
         raise
     return int(resp["ContentLength"])

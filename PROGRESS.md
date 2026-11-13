@@ -86,3 +86,25 @@ All downloads were checked against the publisher's SHA-256 checksums.
   - `make build-images` → api 732 MB, web 91 MB.
   - ci.yml parses; all `uses:` pinned to 40-char SHAs.
 - Next: Phase 6 (Helm chart, k3d install, ingress sample analysis, HPA).
+
+### Phase 6: Helm chart and local Kubernetes — DONE
+- Chart `deploy/helm/experiment-analyzer` (apiVersion v2, Helm 4): api / worker / web Deployments, postgres + rabbitmq
+  StatefulSets with PVCs (local-path), Services, Traefik Ingress with cert-manager annotation, worker HPA (1–3, CPU 70%),
+  migrate + seed Job as a `post-install,pre-upgrade` hook (D13), ConfigMap, Secret (generated only for local clusters),
+  probes and requests/limits on every long-running pod, non-root and read-only root filesystems, no SA token.
+  `ci/k3d-values.yaml` adds an in-cluster moto. `make k3d-up / k3d-deploy / k3d-smoke`.
+- Phase 7 files drafted (not run, need AWS/DNS/GitHub): `deploy/aws/*`, `deploy/box/bootstrap.sh`,
+  `deploy/box/remote-deploy.sh`, `.github/workflows/deploy.yml`, `scripts/smoke.py`, `scripts/s3_policy_check.py`.
+  Steps for the owner: BLOCKERS.md B3–B7.
+- **Check** (`docs/checks/phase6_k3d.txt`):
+  - `scripts/helm_check.sh` → helm lint clean; kubeconform 15/15 (production values) and 18/18 (k3d values) valid
+    against Kubernetes 1.36.0; ConfigMap integers OK.
+  - Fresh `helm install` on k3d (k3s v1.36.6+k3s1) → `STATUS: deployed`; the post-install migrate Job "Job completed";
+    `kubectl get pods`: all 6 pods 1/1 Running, 0 restarts.
+  - Sample analysis through the Traefik ingress (127.0.0.1:8081) → POST 202, QUEUED → SUCCEEDED in 0.57 s, verdict
+    "Mens E-Mail increased visit rate by 7.66 percentage points (95% CI 7.00 to 8.32) …".
+  - `kubectl get hpa` → worker HPA 1–3 replicas at 70% CPU (HPA burst result: see results/hpa.json).
+  - `helm upgrade` (revision 2) ran the pre-upgrade migrate hook successfully.
+- Found and fixed on k3d: Helm float rendering of 52428800 (D13), pre-upgrade hook reading the old ConfigMap (D13).
+  Found while writing the IAM policy: S3 403 for missing keys without ListBucket (D14), fixed + 2 tests (backend 75 passed).
+- Next: Phase 8 (README evidence pack, `make bullets`, final review against Done means, DONE.md).

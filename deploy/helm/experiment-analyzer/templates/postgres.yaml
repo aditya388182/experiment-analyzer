@@ -1,0 +1,65 @@
+{{- $c := dict "root" . "component" "postgres" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ea.fullname" . }}-postgres
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  clusterIP: None
+  selector: {{- include "ea.selector" $c | nindent 4 }}
+  ports:
+    - { name: postgres, port: 5432, targetPort: 5432 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ea.fullname" . }}-postgres
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "ea.fullname" . }}-postgres
+  replicas: 1
+  selector:
+    matchLabels: {{- include "ea.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "ea.selector" $c | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ea.fullname" . }}
+      securityContext: {{- include "ea.podSecurity" (dict "uid" 999 "gid" 999) | nindent 8 }}
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports: [{ name: postgres, containerPort: 5432 }]
+          env:
+            - { name: POSTGRES_DB, value: {{ .Values.postgres.database | quote }} }
+            - { name: POSTGRES_USER, value: {{ .Values.postgres.user | quote }} }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{ include "ea.secretName" . }}, key: POSTGRES_PASSWORD } }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+          securityContext: {{- include "ea.containerSecurity" . | nindent 12 }}
+          readinessProbe:
+            exec: { command: ["pg_isready", "-h", "127.0.0.1", "-U", {{ .Values.postgres.user | quote }}, "-d", {{ .Values.postgres.database | quote }}] }
+            periodSeconds: 5
+            timeoutSeconds: 3
+          livenessProbe:
+            exec: { command: ["pg_isready", "-h", "127.0.0.1", "-U", {{ .Values.postgres.user | quote }}] }
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            timeoutSeconds: 5
+          resources: {{- toYaml .Values.postgres.resources | nindent 12 }}
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+            - { name: run, mountPath: /var/run/postgresql }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: run, emptyDir: {} }
+        - { name: tmp, emptyDir: {} }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.postgres.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.storage }}

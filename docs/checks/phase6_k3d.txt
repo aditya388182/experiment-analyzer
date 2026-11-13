@@ -1,0 +1,83 @@
+## helm install (fresh, k3d, k3s v1.36.6+k3s1)
+NAME: ea
+LAST DEPLOYED: Fri Nov 13 21:05:46 2026
+NAMESPACE: experiment-analyzer
+STATUS: deployed
+REVISION: 1
+DESCRIPTION: Install complete
+
+## migrate hook (post-install) events
+ Normal SuccessfulCreate job/ea-experiment-analyzer-migrate Created pod: ea-experiment-analyzer-migrate-g5g88
+ Normal Completed job/ea-experiment-analyzer-migrate Job completed
+
+## kubectl get pods
+NAME                                            READY  STATUS   RESTARTS
+ea-experiment-analyzer-api-6cd7d5bcd9-mft45     1/1    Running  0
+ea-experiment-analyzer-moto-7c44d75566-4xg9c    1/1    Running  0
+ea-experiment-analyzer-postgres-0               1/1    Running  0
+ea-experiment-analyzer-rabbitmq-0               1/1    Running  0
+ea-experiment-analyzer-web-657d9b6bfc-wwt87     1/1    Running  0
+ea-experiment-analyzer-worker-6d9d4fb665-fqxxh  1/1    Running  0
+
+## sample analysis through the Traefik ingress (127.0.0.1:8081)
+{
+  "base_url": "http://127.0.0.1:8081",
+  "ok": true,
+  "health": {
+    "status": "ok",
+    "db": true,
+    "broker": true
+  },
+  "http_status": {
+    "GET /": 200,
+    "GET /api/health": 200,
+    "POST /api/analyses/sample/hillstrom": 202,
+    "GET /api/analyses/{id}": 200
+  },
+  "analysis_id": "2e5c9217-f8a7-44a1-852d-54cb0c7449a6",
+  "statuses_seen": [
+    "QUEUED",
+    "SUCCEEDED"
+  ],
+  "reused_from": null,
+  "submit_to_terminal_seconds": 0.569,
+  "server_timings_ms": {
+    "stats_ms": 20,
+    "total_ms": 440,
+    "ingest_ms": 173,
+    "queued_ms": 78,
+    "download_ms": 158
+  },
+  "verdict": "Mens E-Mail increased visit rate by 7.66 percentage points (95% CI 7.00 to 8.32) vs No E-Mail. Womens E-Mail increased visit rate by 4.52 percentage points (95% CI 3.89 to 5.16) vs No E-Mail.",
+  "error": null,
+  "git_sha": "local",
+  "abkit_version": "0.1.0"
+}
+
+## kubectl get pods (after smoke)
+NAME                                             READY   STATUS    RESTARTS   AGE
+ea-experiment-analyzer-api-6cd7d5bcd9-mft45      1/1     Running   0          32s
+ea-experiment-analyzer-moto-7c44d75566-4xg9c     1/1     Running   0          78s
+ea-experiment-analyzer-postgres-0                1/1     Running   0          78s
+ea-experiment-analyzer-rabbitmq-0                1/1     Running   0          78s
+ea-experiment-analyzer-web-657d9b6bfc-wwt87      1/1     Running   0          32s
+ea-experiment-analyzer-worker-6d9d4fb665-fqxxh   1/1     Running   0          32s
+
+## kubectl get hpa
+NAME                            REFERENCE                                  TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+ea-experiment-analyzer-worker   Deployment/ea-experiment-analyzer-worker   cpu: <unknown>/70%   1         3         1          78s
+
+## kubectl get ingress,svc,pvc
+NAME                                               CLASS     HOSTS   ADDRESS      PORTS   AGE
+ingress.networking.k8s.io/ea-experiment-analyzer   traefik   *       172.19.0.2   80      78s
+
+NAME                                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/ea-experiment-analyzer-api        ClusterIP   10.43.173.99    <none>        8000/TCP   78s
+service/ea-experiment-analyzer-moto       ClusterIP   10.43.124.174   <none>        5000/TCP   78s
+service/ea-experiment-analyzer-postgres   ClusterIP   None            <none>        5432/TCP   78s
+service/ea-experiment-analyzer-rabbitmq   ClusterIP   10.43.37.232    <none>        5672/TCP   78s
+service/ea-experiment-analyzer-web        ClusterIP   10.43.117.194   <none>        8080/TCP   78s
+
+NAME                                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-ea-experiment-analyzer-postgres-0   Bound    pvc-bb56627b-ae4b-4e9b-85c4-19393e142365   1Gi        RWO            local-path     <unset>                 78s
+persistentvolumeclaim/data-ea-experiment-analyzer-rabbitmq-0   Bound    pvc-c18e1ad5-47a4-4002-982d-a201649bc117   1Gi        RWO            local-path     <unset>                 78s

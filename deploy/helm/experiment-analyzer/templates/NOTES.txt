@@ -1,0 +1,6 @@
+experiment-analyzer {{ .Values.image.tag }} installed in namespace {{ .Release.Namespace }}.
+
+  kubectl -n {{ .Release.Namespace }} get pods,hpa
+  {{- if .Values.ingress.enabled }}
+  open {{ if .Values.ingress.tls.enabled }}https{{ else }}http{{ end }}://{{ .Values.ingress.host | default "<ingress address>" }}/
+  {{- end }}

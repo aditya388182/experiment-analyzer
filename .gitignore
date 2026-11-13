@@ -40,3 +40,6 @@ deploy/helm/**/charts/*.tgz
 
 # Local CI artifacts (JUnit XML)
 build/
+
+# Rendered with the real bucket name by s3-setup.sh
+deploy/aws/iam-policy.rendered.json

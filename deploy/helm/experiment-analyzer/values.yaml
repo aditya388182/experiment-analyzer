@@ -1,0 +1,95 @@
+# Default values (production on the EC2 k3s box). No secrets here: the Secret is created from GitHub Actions
+# secrets (deploy.yml) and referenced by name, or generated in-cluster for local clusters (secrets.create=true).
+
+image:
+  registry: ghcr.io/aditya388182
+  api: experiment-analyzer-api   # also used by the worker and the migrate Job
+  web: experiment-analyzer-web
+  tag: ""                        # set by deploy.yml: --set image.tag=<git sha>
+  pullPolicy: IfNotPresent
+imagePullSecrets: []
+
+# Non-secret settings, rendered into a ConfigMap.
+config:
+  allowedHosts: "p3.example.com"   # comma-separated; set to the ingress host
+  s3Bucket: ""                     # required
+  awsRegion: us-east-1
+  s3EndpointUrl: ""                # empty in production: real S3, credentials from the EC2 instance role (IMDSv2)
+  s3PublicEndpointUrl: ""
+  s3CreateBucket: false
+  uploadMaxBytes: 52428800
+  presignExpiresSeconds: 600
+  drfNumProxies: 1                 # Traefik
+  logLevel: INFO
+  analysisRate: 30/hour
+
+secrets:
+  # Name of an existing Secret with keys DJANGO_SECRET_KEY, POSTGRES_PASSWORD, RABBITMQ_PASSWORD.
+  existingSecret: experiment-analyzer
+  # true only for local clusters: the chart generates random values once and keeps them on upgrade.
+  create: false
+
+api:
+  replicas: 1
+  workers: 3
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+worker:
+  concurrency: 2
+  resources:
+    requests: { cpu: 250m, memory: 384Mi }
+    limits: { cpu: "1", memory: 1Gi }
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+
+web:
+  replicas: 1
+  resources:
+    requests: { cpu: 25m, memory: 32Mi }
+    limits: { cpu: 250m, memory: 128Mi }
+
+migrate:
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 512Mi }
+
+postgres:
+  image: postgres:16.16-trixie@sha256:30551eca978d79ccf49d037bc297b5670baea61a04ceca42ff7fd3100163d3ce
+  database: analyzer
+  user: analyzer
+  storage: 5Gi
+  storageClassName: local-path   # k3s default
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 1Gi }
+
+rabbitmq:
+  image: rabbitmq:4.3.7-management-alpine@sha256:eb338b3fc8f5c251028c0022ac0de3fe1db2d599d1c6a08b45898f756f248881
+  user: analyzer
+  storage: 1Gi
+  storageClassName: local-path
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: "1", memory: 768Mi }
+
+# Local clusters only: an in-cluster moto S3 so the app runs without AWS.
+devS3:
+  enabled: false
+  image: motoserver/moto:5.2.5@sha256:59a1965d845249b04def37a0e2565f9cc6c44543cb89b68e90f28f344b3b0d1a
+  resources:
+    requests: { cpu: 50m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+
+ingress:
+  enabled: true
+  className: traefik
+  host: p3.example.com
+  tls:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
+    secretName: experiment-analyzer-tls

@@ -134,7 +134,7 @@ def run_analysis(self: Any, analysis_id: str) -> str:
                         return Analysis.Status.FAILED
                     log.warning("transient S3 error for %s (retry %s): %s", analysis_id, self.request.retries + 1, e)
                     raise self.retry(exc=e, countdown=2 ** (self.request.retries + 1)) from e
-                if "NoSuchKey" in str(e) or "404" in str(e):
+                if storage.is_missing(e):  # 404, or 403 because the role has no ListBucket (storage.MISSING_CODES)
                     raise AnalysisError(
                         "OBJECT_MISSING", "The file is no longer in storage (uploads expire after 7 days)."
                     ) from e

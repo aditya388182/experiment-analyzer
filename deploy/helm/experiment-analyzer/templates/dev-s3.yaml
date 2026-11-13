@@ -1,0 +1,46 @@
+{{- if .Values.devS3.enabled }}
+{{- $c := dict "root" . "component" "moto" }}
+# Local clusters only: S3 API (moto) so the chart runs without AWS. Never enabled in production values.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ea.fullname" . }}-moto
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  selector: {{- include "ea.selector" $c | nindent 4 }}
+  ports:
+    - { name: http, port: 5000, targetPort: http }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ea.fullname" . }}-moto
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "ea.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "ea.selector" $c | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ea.fullname" . }}
+      securityContext: {{- include "ea.podSecurity" (dict "uid" 65534 "gid" 65534) | nindent 8 }}
+      containers:
+        - name: moto
+          image: {{ .Values.devS3.image }}
+          ports: [{ name: http, containerPort: 5000 }]
+          securityContext: {{- include "ea.containerSecurity" . | nindent 12 }}
+          readinessProbe:
+            tcpSocket: { port: http }
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket: { port: http }
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources: {{- toYaml .Values.devS3.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: tmp, emptyDir: {} }
+{{- end }}

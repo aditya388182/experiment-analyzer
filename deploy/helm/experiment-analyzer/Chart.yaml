@@ -1,0 +1,7 @@
+apiVersion: v2
+name: experiment-analyzer
+description: A/B test analysis app - Django REST API, Celery worker on RabbitMQ, PostgreSQL, React SPA
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.33.0-0"

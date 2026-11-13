@@ -1,0 +1,62 @@
+{{- $c := dict "root" . "component" "rabbitmq" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ea.fullname" . }}-rabbitmq
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  selector: {{- include "ea.selector" $c | nindent 4 }}
+  ports:
+    - { name: amqp, port: 5672, targetPort: 5672 }
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ea.fullname" . }}-rabbitmq
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "ea.fullname" . }}-rabbitmq
+  replicas: 1
+  selector:
+    matchLabels: {{- include "ea.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "ea.selector" $c | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ea.fullname" . }}
+      securityContext: {{- include "ea.podSecurity" (dict "uid" 100 "gid" 101) | nindent 8 }}
+      containers:
+        - name: rabbitmq
+          image: {{ .Values.rabbitmq.image }}
+          ports: [{ name: amqp, containerPort: 5672 }]
+          env:
+            - { name: RABBITMQ_DEFAULT_USER, value: {{ .Values.rabbitmq.user | quote }} }
+            - name: RABBITMQ_DEFAULT_PASS
+              valueFrom: { secretKeyRef: { name: {{ include "ea.secretName" . }}, key: RABBITMQ_PASSWORD } }
+          securityContext:
+            allowPrivilegeEscalation: false
+            # RabbitMQ writes generated config under /etc/rabbitmq and its logs/state under /var/lib/rabbitmq.
+            readOnlyRootFilesystem: false
+            capabilities: { drop: ["ALL"] }
+          readinessProbe:
+            exec: { command: ["rabbitmq-diagnostics", "-q", "check_port_connectivity"] }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 15
+          livenessProbe:
+            exec: { command: ["rabbitmq-diagnostics", "-q", "ping"] }
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 15
+          resources: {{- toYaml .Values.rabbitmq.resources | nindent 12 }}
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/rabbitmq }
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.rabbitmq.storageClassName }}
+        resources:
+          requests:
+            storage: {{ .Values.rabbitmq.storage }}

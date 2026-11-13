@@ -202,13 +202,27 @@ def test_transient_errors_give_up_after_three_retries(seeded, monkeypatch):
     assert a.status == "FAILED" and a.error_code == "STORAGE_UNAVAILABLE"
 
 
-def test_permission_errors_are_not_retried(seeded, monkeypatch):
+def test_access_denied_means_missing_and_is_not_retried(seeded, monkeypatch):
+    """Without s3:ListBucket (production IAM), S3 returns 403 for a missing key. Not transient: no retry."""
     from botocore.exceptions import ClientError
 
     def denied(*a, **k):
         raise ClientError({"Error": {"Code": "AccessDenied", "Message": "no"}}, "GetObject")
 
     monkeypatch.setattr(storage, "download_with_sha256", denied)
+    a = _queued_sample()
+    assert tasks.run_analysis.apply(args=[str(a.pk)], throw=True).get() == "FAILED"
+    a.refresh_from_db()
+    assert a.error_code == "OBJECT_MISSING" and a.attempts == 1
+
+
+def test_other_client_errors_are_internal_and_not_retried(seeded, monkeypatch):
+    from botocore.exceptions import ClientError
+
+    def bad(*a, **k):
+        raise ClientError({"Error": {"Code": "InvalidObjectState", "Message": "archived"}}, "GetObject")
+
+    monkeypatch.setattr(storage, "download_with_sha256", bad)
     a = _queued_sample()
     assert tasks.run_analysis.apply(args=[str(a.pk)], throw=True).get() == "FAILED"
     a.refresh_from_db()

@@ -1,0 +1,74 @@
+{{- $c := dict "root" . "component" "worker" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ea.fullname" . }}-worker
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.worker.autoscaling.enabled }}
+  replicas: 1
+  {{- end }}
+  selector:
+    matchLabels: {{- include "ea.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "ea.selector" $c | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "ea.fullname" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- include "ea.podSecurity" (dict "uid" 10001 "gid" 10001) | nindent 8 }}
+      # Long enough for a running job to finish (hard limit 150 s); acks_late requeues it if the pod dies anyway.
+      terminationGracePeriodSeconds: 160
+      containers:
+        - name: worker
+          image: {{ include "ea.image" (dict "root" . "name" .Values.image.api) }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["celery", "-A", "config", "worker", "--loglevel", "INFO", "--concurrency", "{{ .Values.worker.concurrency }}"]
+          {{- include "ea.appEnv" . | nindent 10 }}
+          securityContext: {{- include "ea.containerSecurity" . | nindent 12 }}
+          # Ready = the broker accepts TCP connections. Alive = the worker answers a Celery ping over the broker.
+          readinessProbe:
+            exec:
+              command: ["python", "-c", "import socket; socket.create_connection(('{{ include "ea.fullname" . }}-rabbitmq', 5672), 3).close()"]
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "celery -A config inspect ping -d celery@$HOSTNAME --timeout 10 | grep -q pong"]
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+          resources: {{- toYaml .Values.worker.resources | nindent 12 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - name: tmp
+          emptyDir: { sizeLimit: 512Mi }   # each job streams its CSV (<= 50 MB) here
+{{- if .Values.worker.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "ea.fullname" . }}-worker
+  labels: {{- include "ea.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "ea.fullname" . }}-worker
+  minReplicas: {{ .Values.worker.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.worker.autoscaling.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.worker.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}
