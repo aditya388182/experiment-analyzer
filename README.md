@@ -24,8 +24,8 @@ against SciPy and statsmodels and against the original lab results.
 |---|---|
 | Hillstrom reproduction: men's email vs no email, visit rate | +7.66 pts (95% CI 7.00 to 8.32), 64,000 customers |
 | SRM p-value (planned 1/3 split) | 0.9037 |
-| Max |app − lab| over 12 reproduced values | 0.0e+00 |
-| Max |abkit − SciPy/numpy| (Welch, chi-square, CUPED; 20 datasets each) | 4.4e-16 |
+| Largest absolute difference, app vs lab, over 12 reproduced values | 0.0e+00 |
+| Largest absolute difference, abkit vs SciPy/numpy (Welch, chi-square, CUPED; 20 datasets each) | 4.4e-16 |
 | Hypothesis examples generated | 1,601 |
 | Edge cases covered | 12 |
 | Tests passed (abkit + backend + integration + frontend) | 276 (0 failed) |

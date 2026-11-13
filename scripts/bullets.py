@@ -92,8 +92,11 @@ def main() -> int:
                 f"+{n['diff_pts']} pts (95% CI {n['ci_low_pts']} to {n['ci_high_pts']}), {n['customers']} customers",
             ),
             ("SRM p-value (planned 1/3 split)", n["srm_p"]),
-            ("Max |app − lab| over 12 reproduced values", n["lab_max_abs_diff"]),
-            ("Max |abkit − SciPy/numpy| (Welch, chi-square, CUPED; 20 datasets each)", n["scipy_max_diff"]),
+            ("Largest absolute difference, app vs lab, over 12 reproduced values", n["lab_max_abs_diff"]),
+            (
+                "Largest absolute difference, abkit vs SciPy/numpy (Welch, chi-square, CUPED; 20 datasets each)",
+                n["scipy_max_diff"],
+            ),
             ("Hypothesis examples generated", n["hypothesis_examples"]),
             ("Edge cases covered", n["edge_cases"]),
             (
