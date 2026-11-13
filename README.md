@@ -28,7 +28,7 @@ against SciPy and statsmodels and against the original lab results.
 | Largest absolute difference, abkit vs SciPy/numpy (Welch, chi-square, CUPED; 20 datasets each) | 4.4e-16 |
 | Hypothesis examples generated | 1,601 |
 | Edge cases covered | 12 |
-| Tests passed (abkit + backend + integration + frontend) | 276 (0 failed) |
+| Tests passed (abkit + backend + integration + frontend) | 277 (0 failed) |
 | Churn model test AUC vs recency baseline (lab) | 0.77 vs 0.71 |
 | Deployed sample analysis, submit → SUCCEEDED (s) | MISSING(deploy_smoke.json) |
 | Worker replicas during a 20-job burst (local k3d) | 1 → 3 |

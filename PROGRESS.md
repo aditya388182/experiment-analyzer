@@ -120,4 +120,7 @@ All downloads were checked against the publisher's SHA-256 checksums.
 - All results regenerated on a clean commit (`dirty: false`). The results metadata's dirty check had a bug (stripping
   the first porcelain line) and was fixed.
 - **Check:** `make bullets` → three bullets; the only MISSING is `results/deploy_smoke.json` (Phase 7, B7).
-  276 tests passed, 0 failed. Subagent review against SPEC §14: see DONE.md section 6.
+  277 tests passed, 0 failed (after review fixes). Subagent review against SPEC §14: 7 gaps found and fixed; see DONE.md section 6.
+
+## Next
+Phase 7 is yours: BLOCKERS.md B3 → B4 → B5 → B6 → B7 → B1 → B2 → B8 (summary in DONE.md section 4).
