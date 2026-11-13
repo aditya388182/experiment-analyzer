@@ -75,8 +75,15 @@ def test_second_post_of_same_sample_returns_reused_from():
 
 def test_same_file_uploaded_is_reused_by_hash_on_worker():
     up = upload(HILLSTROM.read_bytes(), "hillstrom_copy.csv")
-    m = {"variant_col": "segment", "control_label": "No E-Mail", "metric_col": "visit", "metric_type": "binary",
-         "pre_period_col": "history", "planned_split": None, "alpha": 0.05}
+    m = {
+        "variant_col": "segment",
+        "control_label": "No E-Mail",
+        "metric_col": "visit",
+        "metric_type": "binary",
+        "pre_period_col": "history",
+        "planned_split": None,
+        "alpha": 0.05,
+    }
     r = requests.post(f"{API}/api/analyses", json={"upload_id": up, "mapping": m}, timeout=5)
     assert r.status_code == 202
     d = poll(r.json()["analysis_id"])

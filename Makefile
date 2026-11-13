@@ -36,3 +36,18 @@ curl-walkthrough: ## Phase 2 check: presigned POST upload to moto via curl
 .PHONY: test-integration
 test-integration: ## real RabbitMQ + Celery worker + API end to end (needs `make infra-up`)
 	scripts/integration.sh
+
+# ---------- frontend ----------
+BASE_URL ?= http://localhost:5173
+.PHONY: test-frontend lint-frontend run-web screenshots
+test-frontend: ## Vitest + RTL + MSW
+	cd frontend && npx vitest run
+
+lint-frontend: ## tsc --noEmit and eslint with zero warnings
+	cd frontend && npx tsc -b --noEmit && npx eslint --max-warnings 0 .
+
+run-web: ## Vite dev server on 127.0.0.1:5173, proxying /api to 127.0.0.1:8000
+	cd frontend && npx vite
+
+screenshots: ## docs/screenshots from a running stack (needs PLAYWRIGHT_DIR with playwright@1.64.1 installed)
+	node scripts/screenshots.mjs $(BASE_URL) docs/screenshots

@@ -1,0 +1,189 @@
+{
+  "churn": {
+    "selected_model": "gradient_boosting",
+    "baseline_model": "recency_rule",
+    "test_auc": 0.7694432511621907,
+    "test_auc_ci": [
+      0.7562431706354013,
+      0.7835814908667859
+    ],
+    "baseline_auc": 0.709207628415738,
+    "auc_gain_ci": [
+      0.050072174946424415,
+      0.07086252620451335
+    ],
+    "shuffled_score_auc": 0.49979632499104865,
+    "test_by_model": [
+      {
+        "model": "recency_rule",
+        "roc_auc": 0.709207628415738,
+        "pr_auc": 0.6821670693139567,
+        "selected": false,
+        "baseline": true
+      },
+      {
+        "model": "rfm_logistic",
+        "roc_auc": 0.7602864359925527,
+        "pr_auc": 0.7277470802825113,
+        "selected": false,
+        "baseline": false
+      },
+      {
+        "model": "gradient_boosting",
+        "roc_auc": 0.7694432511621907,
+        "pr_auc": 0.7358028205429128,
+        "selected": true,
+        "baseline": false
+      }
+    ],
+    "targeting": {
+      "top20_by_risk_x_value": 0.5112314680638698,
+      "top20_by_value_only": 0.4046267205944986,
+      "top20_by_risk_only": 0.16924607781603734,
+      "lapsed_customers": 2189,
+      "share_of_revenue_lapsed": 0.21245912215571597
+    },
+    "calibration": {
+      "uncalibrated_error": 0.11548084908172158,
+      "test_churn_rate": 0.504959630911188,
+      "recent_train_churn_rate": 0.6341632088520055,
+      "variants": [
+        {
+          "variant": "uncalibrated",
+          "calibration_error": 0.11548084908172158,
+          "mean_gap_points": 11.548084908172163
+        },
+        {
+          "variant": "same_season_platt",
+          "calibration_error": 0.13735012871002783,
+          "mean_gap_points": -13.735012871002784
+        },
+        {
+          "variant": "same_season_isotonic",
+          "calibration_error": 0.1375542704058696,
+          "mean_gap_points": -13.755427040586959
+        },
+        {
+          "variant": "recent_base_rate_shift",
+          "calibration_error": 0.1258160836842036,
+          "mean_gap_points": 12.58160836842035
+        }
+      ],
+      "recalibration_helped": false
+    },
+    "known_limits": [
+      "Recalibration failed: every recalibrated variant had a larger calibration error than the uncalibrated model, because the test period's churn rate differs from both the same-season and the recent training periods. Use the scores for ranking, not as probabilities.",
+      "One retailer (UCI Online Retail II), one time split; AUC is for ranking customers, not for forecasting how many will churn."
+    ],
+    "sources": {
+      "test_by_model.0.roc_auc": "churn_results.json:test_by_model.recency_rule.roc_auc",
+      "test_by_model.0.pr_auc": "churn_results.json:test_by_model.recency_rule.pr_auc",
+      "test_by_model.1.roc_auc": "churn_results.json:test_by_model.rfm_logistic.roc_auc",
+      "test_by_model.1.pr_auc": "churn_results.json:test_by_model.rfm_logistic.pr_auc",
+      "test_by_model.2.roc_auc": "churn_results.json:test_by_model.gradient_boosting.roc_auc",
+      "test_by_model.2.pr_auc": "churn_results.json:test_by_model.gradient_boosting.pr_auc",
+      "calibration.variants.0.calibration_error": "churn_recalibration.json:variants.uncalibrated.calibration_error",
+      "calibration.variants.0.mean_gap_points": "churn_recalibration.json:variants.uncalibrated.mean_gap_points",
+      "calibration.variants.1.calibration_error": "churn_recalibration.json:variants.same_season_platt.calibration_error",
+      "calibration.variants.1.mean_gap_points": "churn_recalibration.json:variants.same_season_platt.mean_gap_points",
+      "calibration.variants.2.calibration_error": "churn_recalibration.json:variants.same_season_isotonic.calibration_error",
+      "calibration.variants.2.mean_gap_points": "churn_recalibration.json:variants.same_season_isotonic.mean_gap_points",
+      "calibration.variants.3.calibration_error": "churn_recalibration.json:variants.recent_base_rate_shift.calibration_error",
+      "calibration.variants.3.mean_gap_points": "churn_recalibration.json:variants.recent_base_rate_shift.mean_gap_points",
+      "test_auc": "churn_results.json:test_selected.roc_auc",
+      "test_auc_ci": "churn_results.json:test_selected.roc_auc_ci",
+      "baseline_auc": "churn_results.json:test_by_model.recency_rule.roc_auc",
+      "auc_gain_ci": "churn_results.json:auc_gain_over_recency_ci",
+      "shuffled_score_auc": "churn_results.json:shuffled_score_auc",
+      "targeting.top20_by_risk_x_value": "churn_results.json:revenue_at_risk.top20_by_risk_x_value",
+      "targeting.top20_by_value_only": "churn_results.json:revenue_at_risk.top20_by_value_only",
+      "targeting.top20_by_risk_only": "churn_results.json:revenue_at_risk.top20_by_risk_only",
+      "targeting.lapsed_customers": "churn_results.json:revenue_at_risk.lapsed_customers",
+      "targeting.share_of_revenue_lapsed": "churn_results.json:revenue_at_risk.share_of_all_last_year_revenue",
+      "calibration.uncalibrated_error": "churn_results.json:test_selected.calibration_error",
+      "calibration.test_churn_rate": "churn_recalibration.json:test_churn_rate",
+      "calibration.recent_train_churn_rate": "churn_recalibration.json:recent_train_churn_rate"
+    }
+  },
+  "forecasting": {
+    "backtests": 45,
+    "weeks_total": 105,
+    "first_week": "2009-11-30/2009-12-06",
+    "last_week": "2011-11-28/2011-12-04",
+    "methods": [
+      {
+        "method": "naive",
+        "mase": 0.9066136171414564,
+        "mae": 40374.57493333333,
+        "smape": 0.21118516002157012,
+        "winner": false
+      },
+      {
+        "method": "seasonal_naive",
+        "mase": 0.7030188433309883,
+        "mae": 31307.810111111114,
+        "smape": 0.16669527344591165,
+        "winner": true
+      },
+      {
+        "method": "moving_average_4",
+        "mase": 0.7383166888888735,
+        "mae": 32879.74272222223,
+        "smape": 0.17312702086789436,
+        "winner": false
+      },
+      {
+        "method": "exp_smoothing",
+        "mase": 0.8766890551909328,
+        "mae": 39041.93283974995,
+        "smape": 0.20541838087038017,
+        "winner": false
+      },
+      {
+        "method": "lightgbm",
+        "mase": 0.8495740781509715,
+        "mae": 37834.41107786942,
+        "smape": 0.202846631831174,
+        "winner": false
+      }
+    ],
+    "winner": "seasonal_naive",
+    "lightgbm_vs_best_simple": {
+      "best_simple": "seasonal_naive",
+      "mae_difference": 6526.600966758316,
+      "ci": [
+        -731.8924744054814,
+        14856.524282232524
+      ],
+      "ci_includes_zero": true
+    },
+    "sources": {
+      "methods.0.mase": "forecast_results.json:models.naive.mase",
+      "methods.0.mae": "forecast_results.json:models.naive.mae",
+      "methods.0.smape": "forecast_results.json:models.naive.smape",
+      "methods.1.mase": "forecast_results.json:models.seasonal_naive.mase",
+      "methods.1.mae": "forecast_results.json:models.seasonal_naive.mae",
+      "methods.1.smape": "forecast_results.json:models.seasonal_naive.smape",
+      "methods.2.mase": "forecast_results.json:models.moving_average_4.mase",
+      "methods.2.mae": "forecast_results.json:models.moving_average_4.mae",
+      "methods.2.smape": "forecast_results.json:models.moving_average_4.smape",
+      "methods.3.mase": "forecast_results.json:models.exp_smoothing.mase",
+      "methods.3.mae": "forecast_results.json:models.exp_smoothing.mae",
+      "methods.3.smape": "forecast_results.json:models.exp_smoothing.smape",
+      "methods.4.mase": "forecast_results.json:models.lightgbm.mase",
+      "methods.4.mae": "forecast_results.json:models.lightgbm.mae",
+      "methods.4.smape": "forecast_results.json:models.lightgbm.smape",
+      "backtests": "forecast_results.json:forecasts",
+      "weeks_total": "forecast_results.json:weeks_total",
+      "first_week": "forecast_results.json:first_week",
+      "last_week": "forecast_results.json:last_week",
+      "lightgbm_vs_best_simple.best_simple": "forecast_results.json:lightgbm_vs_best_simple.best_simple",
+      "lightgbm_vs_best_simple.mae_difference": "forecast_results.json:lightgbm_vs_best_simple.mae_difference",
+      "lightgbm_vs_best_simple.ci": "forecast_results.json:lightgbm_vs_best_simple.ci"
+    }
+  },
+  "source": {
+    "repo": "applied-data-science-lab",
+    "commit": "lab build of 2026-11-05 (lab_inputs/)"
+  }
+}

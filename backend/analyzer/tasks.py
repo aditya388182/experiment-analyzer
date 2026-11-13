@@ -59,6 +59,20 @@ def find_reusable(input_sha256: str, mapping_hash: str, exclude_id: Any) -> Anal
     )
 
 
+def _drop_hint(data: Any) -> str:
+    """When validation fails after rows were dropped, say so: the usual cause is a wrong metric type."""
+    dropped = getattr(data, "dropped", None) or {}
+    n_bin, n_num = dropped.get("non_binary_value", 0), dropped.get("non_numeric_metric", 0)
+    if n_bin:
+        return (
+            f" {n_bin:,} rows were dropped because the metric was not 0/1. "
+            "Is the metric type right (binary vs continuous)?"
+        )
+    if n_num:
+        return f" {n_num:,} rows were dropped because the metric was not a number."
+    return ""
+
+
 def _ms(start: float) -> int:
     return round((time.monotonic() - start) * 1000)
 
@@ -156,7 +170,7 @@ def run_analysis(self: Any, analysis_id: str) -> str:
         _finish(analysis, Analysis.Status.SUCCEEDED, timings, result=result, error_code="", error_message="")
         return Analysis.Status.SUCCEEDED
     except AnalysisError as e:  # bad data: tell the user, never retry
-        _fail(analysis, timings, e.code, e.message)
+        _fail(analysis, timings, e.code, e.message + _drop_hint(locals().get("data")))
         return Analysis.Status.FAILED
     except SoftTimeLimitExceeded:
         _fail(analysis, timings, "TIMEOUT", "The analysis took longer than 120 seconds and was stopped.")

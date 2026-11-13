@@ -112,3 +112,24 @@ Fix, without re-enabling a deprecated RabbitMQ feature: `CELERY_CONTROL_QUEUE_EX
   broker) for readiness. A broker outage then takes the pod out of the Service without restarting it.
 - **Reports:** the cards return a `sources` map (output key → `file:key.path`), and the test checks every number in the
   response against its source, 40+ values.
+
+## D11. Phase 4 (frontend) details
+- **Same-origin API in dev.** Vite proxies `/api` to the Django API, so the SPA calls relative `/api/...` exactly as it
+  does behind nginx and Traefik in the cluster. `VITE_API_BASE_URL` defaults to "" (tests set it to http://localhost
+  for MSW). The CORS middleware stays for anyone who points Vite at another API origin.
+- **react-router 7 as `react-router`** (VERSIONS.md concern 1); `createBrowserRouter` data router.
+- **MSW 3 renamed `onUnhandledRequest` to `onUnhandledFrame`.** The old key was silently ignored (unhandled requests only
+  warned); tests now use `onUnhandledFrame: "error"`.
+- **Upload progress test is step-driven.** A fake XHR emits progress only when the test tells it to; the first,
+  timer-based version flaked under full-suite CPU load.
+- **Fixtures are real API responses** captured from the dev stack (`frontend/tests/fixtures/*.json`), and a test checks
+  their keys match `src/api/types.ts`, so the Python result schema and the TS types cannot drift silently.
+- **Metric-type suggestion fixed after the screenshot run found a bug.** The form guessed "binary" for `spend` because
+  the 20 preview rows were all 0. The job then dropped every non-0/1 row and failed with CONSTANT_METRIC. Now
+  the form only suggests binary when both 0 and 1 appear, and the worker's error message names the dropped rows
+  ("... rows were dropped because the metric was not 0/1. Is the metric type right?").
+- **Screenshots** are taken by `scripts/screenshots.mjs` with Playwright 1.64.1 (released 2026-10-14) installed
+  outside the repo, not a project dependency. `npx playwright install-deps chromium` installed Chromium's system
+  libraries with apt on the build box. For the "queued" shot the worker is really stopped and restarted, and the upload
+  shot throttles upload bandwidth (CDP) so a real 3.9 MB upload to moto shows the bar mid-way.
+- **Bundle size:** 849 kB JS (253 kB gzip), mostly Recharts. Route-level code splitting is possible future work.

@@ -56,3 +56,18 @@ All downloads were checked against the publisher's SHA-256 checksums.
     bad data → FAILED `SINGLE_ARM`, attempts 1 (worker log shows one receive, no retry).
 - Found and fixed: RabbitMQ 4.3 refuses Celery's transient control queues (D9); DuckDB sniffer mis-reading ragged files (D10).
 - Next: Phase 4 (React frontend).
+
+### Phase 4: React frontend — DONE
+- Vite 8 + React 18.3.1 + TS 6 strict + Tailwind 4, react-router 7, TanStack Query 5 (1 s polling until terminal),
+  RHF + Zod mapping and sample-size forms, Recharts forest plot / MASE bars / MDE curve. Six pages: Home, Upload, Analysis,
+  Sample size, Model reports, Method.
+- **Check:**
+  - `make test-frontend` → `32 passed` (mapping validation ×7, polling stops at terminal, verdict / SRM banner (green and red)
+    / CUPED card (helpful and not), failure panel, 404 message, upload progress via mocked XHR, S3 rejection, 415 message,
+    429 message, sample size, reports, method, fixture keys = TS types). Stable over 4 consecutive runs.
+  - `make lint-frontend` → tsc clean, eslint 0 errors 0 warnings. `npm run build` OK.
+  - Screenshots of every page against the dev stack (real sample runs, a real 3.9 MB upload with the progress bar at 31%,
+    a queued state with the worker stopped, a real failure): `docs/screenshots/01..11-*.png`.
+  - Backend after the Phase 4 fix: `73 passed, 5 deselected`.
+- Found and fixed via the screenshot run: metric-type guess on an all-zero preview (D11).
+- Next: Phase 5 (Dockerfiles, compose with all services, make dev/test, ci.yml).

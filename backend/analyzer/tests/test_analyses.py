@@ -323,3 +323,12 @@ def test_rate_limit_429(api, seeded, run, monkeypatch):
     assert r.status_code == 429
     assert r.json()["error"]["code"] == "RATE_LIMITED" and "30 per hour" in r.json()["error"]["message"]
     assert api.get("/api/analyses").status_code == 200  # reads are not throttled
+
+
+def test_constant_after_dropping_non_binary_values_explains_metric_type(api, run):
+    rows = [f"{'AB'[i % 2]},{0 if i % 3 else 12.5}" for i in range(60)]
+    up = upload_bytes(api, _csv(rows))
+    r = run(api.post, "/api/analyses", {"upload_id": up["upload_id"], "mapping": mapping()}, format="json")
+    d = detail(api, r.json()["analysis_id"])
+    assert d["error"]["code"] == "CONSTANT_METRIC"
+    assert "20 rows were dropped because the metric was not 0/1. Is the metric type right" in d["error"]["message"]

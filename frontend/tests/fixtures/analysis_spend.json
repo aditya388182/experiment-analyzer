@@ -1,0 +1,148 @@
+{
+  "id": "5bcbf399-8e95-44fb-b6b2-69ac985f59a0",
+  "status": "SUCCEEDED",
+  "mapping": {
+    "alpha": 0.05,
+    "metric_col": "spend",
+    "metric_type": "continuous",
+    "variant_col": "segment",
+    "control_label": "No E-Mail",
+    "planned_split": null,
+    "pre_period_col": "history"
+  },
+  "sample_name": "hillstrom",
+  "upload_id": null,
+  "file_name": null,
+  "result": {
+    "srm": {
+      "p": 0.9036929575604196,
+      "flagged": false,
+      "threshold": 0.001,
+      "planned_split": [
+        0.3333333333333333,
+        0.3333333333333333,
+        0.3333333333333333
+      ],
+      "observed_split": [
+        0.33290625,
+        0.332921875,
+        0.334171875
+      ]
+    },
+    "arms": [
+      {
+        "n": 21306,
+        "sd": 11.588199681271535,
+        "mean": 0.6527893551112363,
+        "label": "No E-Mail",
+        "is_control": true
+      },
+      {
+        "n": 21307,
+        "sd": 17.75420510373683,
+        "mean": 1.422616511005773,
+        "label": "Mens E-Mail",
+        "is_control": false
+      },
+      {
+        "n": 21387,
+        "sd": 15.116106470737082,
+        "mean": 1.0772015710478329,
+        "label": "Womens E-Mail",
+        "is_control": false
+      }
+    ],
+    "rows": {
+      "read": 64000,
+      "used": 64000,
+      "dropped": {
+        "null_variant": 0,
+        "null_pre_period": 0,
+        "non_binary_value": 0,
+        "non_numeric_metric": 0
+      }
+    },
+    "alpha": 0.05,
+    "cuped": {
+      "corr": 0.021729000144139927,
+      "theta": 0.0012754870330541753,
+      "helpful": false,
+      "message": "CUPED not helpful here (correlation 0.02, variance removed 0.0%)",
+      "adjusted": null,
+      "requested": true,
+      "by_comparison": [
+        {
+          "corr": 0.02092254695606989,
+          "treatment": "Mens E-Mail",
+          "variance_removed": 0.00043775297112880196
+        },
+        {
+          "corr": 0.019508878564568406,
+          "treatment": "Womens E-Mail",
+          "variance_removed": 0.00038059634284703936
+        }
+      ],
+      "pre_period_col": "history",
+      "variance_removed": 0.00047214944726370334
+    },
+    "power": {
+      "sd": 11.588199681271535,
+      "alpha": 0.05,
+      "power": 0.8,
+      "mde_abs": 0.3145457661706896,
+      "base_rate": null,
+      "n_per_arm": 21306
+    },
+    "verdict": "Mens E-Mail increased spend by 0.770 (95% CI 0.485 to 1.055; +117.9% relative) vs No E-Mail. Womens E-Mail increased spend by 0.424 (95% CI 0.169 to 0.680; +65.0% relative) vs No E-Mail.",
+    "warnings": [],
+    "metric_col": "spend",
+    "comparisons": [
+      {
+        "p": 1.1638149682254863E-7,
+        "se": 0.14524656024868676,
+        "diff": 0.7698271558945367,
+        "ci_low": 0.4851397325684075,
+        "p_holm": 2.3276299364509725E-7,
+        "ci_high": 1.0545145792206658,
+        "rel_lift": 1.1792887703620059,
+        "ctrl_mean": 0.6527893551112363,
+        "treatment": "Mens E-Mail",
+        "degenerate": false,
+        "treat_mean": 1.422616511005773,
+        "significant": true
+      },
+      {
+        "p": 0.0011293971023632525,
+        "se": 0.13033285852919116,
+        "diff": 0.4244122159365966,
+        "ci_low": 0.16895678988377866,
+        "p_holm": 0.0011293971023632525,
+        "ci_high": 0.6798676419894145,
+        "rel_lift": 0.6501518638646859,
+        "ctrl_mean": 0.6527893551112363,
+        "treatment": "Womens E-Mail",
+        "degenerate": false,
+        "treat_mean": 1.0772015710478329,
+        "significant": true
+      }
+    ],
+    "metric_type": "continuous",
+    "control_label": "No E-Mail"
+  },
+  "error": null,
+  "input_sha256": "27bab8c5d3669f26ec08ebb50a0a78317542f29501156f2e2af6781fab4cd7e2",
+  "abkit_version": "0.1.0",
+  "git_sha": "dev",
+  "reused_from": null,
+  "attempts": 1,
+  "created_at": "2026-11-13T20:14:46.060514+00:00",
+  "started_at": "2026-11-13T20:14:46.112483+00:00",
+  "finished_at": "2026-11-13T20:14:46.266362+00:00",
+  "timings": {
+    "stats_ms": 12,
+    "total_ms": 206,
+    "ingest_ms": 110,
+    "queued_ms": 52,
+    "download_ms": 25
+  }
+}
