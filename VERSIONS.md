@@ -15,7 +15,7 @@ Fixed by decision (do not change): Python 3.12, Django 5.2 LTS, React 18.3.1, He
 |---|---|---|---|
 | Python | **3.12.16** | image 2026-11 | 3.12 receives security fixes only (until 2028-10). numpy 2.5 and scipy 1.18 need >= 3.12, so 3.12 is the floor as well as the target. `requires-python = "==3.12.*"`. |
 | Node.js | **24.22.3** (LTS "Krypton") | 2026-11-10 | LTS until 2028-04. Node 26 became Active LTS in 2026-10, but 24 has a year of LTS behind it and every tool below supports it. Committed as `.nvmrc`. |
-| npm | **11.6.2** | — | ships with the dev machine; set in `packageManager` |
+| npm | **11.19.1** | — | bundled with Node 24.22.3; set in `packageManager` (was 11.6.2 from the laptop; DECISIONS.md D2) |
 | uv (Python env + lock) | **0.13.1** | 2026-10 | produces `uv.lock` for `abkit/` and `backend/` |
 
 ## Python: backend (`backend/pyproject.toml`)
@@ -53,6 +53,7 @@ Fixed by decision (do not change): Python 3.12, Django 5.2 LTS, React 18.3.1, He
 | hypothesis | **6.170.14** | 2026-10-30 |
 | moto[server,s3] | **5.2.5** | 2026-10-27 (matches the Compose image) |
 | ruff | **0.17.3** | 2026-10-27 |
+| hatchling (build backend) | **1.33.0** | 2026-10-28 |
 
 ## Frontend (`frontend/package.json`, exact versions, no `^`)
 
