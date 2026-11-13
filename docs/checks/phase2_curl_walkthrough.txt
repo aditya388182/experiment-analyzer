@@ -1,0 +1,28 @@
+## 1. GET /api/health
+{"status":"ok","db":true,"broker":true} -> HTTP 200
+## 2. POST /api/uploads {filename: hillstrom.csv, size: 3900976}
+{
+  "upload_id": "927e4a13-9916-47b8-8b83-aa70f30d12e1",
+  "max_bytes": 52428800,
+  "expires_in": 600,
+  "s3": {
+    "url": "http://localhost:5000/experiment-analyzer-dev",
+    "fields": {
+      "key": "uploads/927e4a13-9916-47b8-8b83-aa70f30d12e1.csv",
+      "x-amz-algorithm": "AWS4-HMAC-SHA256",
+      "x-amz-credential": "testing/20261113/us-east...",
+      "x-amz-date": "20261113T195909Z",
+      "policy": "eyJleHBpcmF0aW9uIjogIjIw...",
+      "x-amz-signature": "a5cb0c16b713e6a124e10d9a..."
+    }
+  }
+}
+## 3. POST the file to S3 with the returned fields (the API never sees the bytes)
+S3 response: HTTP 204
+## 4. POST /api/uploads/927e4a13-9916-47b8-8b83-aa70f30d12e1/complete
+{"upload_id":"927e4a13-9916-47b8-8b83-aa70f30d12e1","size_bytes":3900976,"columns":["recency","history_segment","history","mens","womens","zip_code","newbie","channel","segment","visit","conversion","spend"],"preview_rows":20,"first_rows":[["10","2) $100 - $200","142.44","1","0","Surburban","0","Phone","Womens E-Mail","0","0","0"],["6","3) $200 - $350","329.08","1","1","Rural","1","Web","No E-Mail","0","0","0"],["7","2) $100 - $200","180.65","0","1","Surburban","1","Web","Womens E-Mail","0","0","0"]]}
+## 5. Error cases
+{"error":{"code":"FILE_TOO_LARGE","message":"The file is 52,428,801 bytes; the limit is 52,428,800 bytes (50 MB)."}} -> HTTP 413
+{"error":{"code":"UNSUPPORTED_FILE_TYPE","message":"Only .csv files can be analyzed."}} -> HTTP 415
+{"error":{"code":"OBJECT_MISSING","message":"The file has not reached storage yet. Upload it, then try again."}} -> HTTP 409
+{"error":{"code":"NOT_FOUND","message":"Not found."}} -> HTTP 404

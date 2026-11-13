@@ -31,3 +31,13 @@ All downloads were checked against the publisher's SHA-256 checksums.
   - `results/validation.json`: max diffs: diff_in_means 2.2e-16, srm 0, holm 0, cuped 4.4e-16, MDE 2.6e-5 relative
     (vs converged statsmodels; see D5), sample size 7.1e-5 relative; 1,601 Hypothesis examples; 12 edge cases.
 - Spec tolerance issue found and handled: DECISIONS.md D5 (statsmodels `solve_power` imprecision, not a formula change).
+
+### Phase 2: Django API and uploads — DONE
+- Django 5.2 project (`backend/config`), env-driven settings, Postgres, `Upload`/`Analysis` models + migration,
+  presigned POST (`content-length-range` 1..50 MB, exact key), `/complete` (HEAD + 256 KB ranged GET preview),
+  `/api/health`, JSON error handler, dev CORS middleware. Compose infra (`deploy/compose.dev.yml`, ports on 127.0.0.1).
+- **Check:** `make test-backend` → `28 passed` (201, 413, 415, 422 ×4, 409, 422 bad CSV ×6, 404, health 200/503,
+  policy conditions, ranged preview, CORS). Curl walkthrough output: `docs/checks/phase2_curl_walkthrough.txt`
+  (presigned POST to moto → 204; complete → 12 columns, 20 preview rows).
+- Found: moto does not enforce the POST policy → BLOCKERS.md B1 (needs a real bucket in Phase 7).
+- Next: Phase 3 (Celery task, DuckDB ingest, idempotency, sample/analyses/sample-size/reports endpoints).

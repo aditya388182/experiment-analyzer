@@ -57,3 +57,22 @@ test checks it against the lab JSON. On Hillstrom the pooled corr is 0.065 and t
 - Extra error codes: `PLANNED_SPLIT_MISMATCH`, `BAD_PLANNED_SPLIT`.
 - Validation order: SINGLE_ARM, CONTROL_NOT_FOUND, TOO_MANY_ARMS, ARM_TOO_SMALL, CONSTANT_METRIC. ARM_TOO_SMALL is checked before CONSTANT_METRIC because a 1-row arm has no variance.
 - When both arms of a comparison have zero variance (but others do not), the comparison is reported as degenerate (CI = point, p = 0 or 1) with a warning, instead of dividing by zero.
+
+## D8. Phase 2 details
+- **Validation status code:** all request-validation failures return 422 (`VALIDATION_ERROR`), matching the 422s in
+  SPEC section 6. Malformed JSON is 400 `BAD_JSON`.
+- **Error codes:** 413 `FILE_TOO_LARGE`, 415 `UNSUPPORTED_FILE_TYPE`, 409 `OBJECT_MISSING`, 422 `BAD_CSV`, 404 `NOT_FOUND`,
+  429 `RATE_LIMITED`, 500 `INTERNAL` (no traceback; logged server-side).
+- **Preview:** a ranged GET of the first 256 KB; when the object is longer, the partial last line (which can split a
+  UTF-8 character) is dropped before decoding. UTF-8 with or without BOM is accepted. 422 for non-UTF-8, NUL bytes,
+  fewer than 2 columns, duplicate header names, ragged rows or no data rows.
+- **Oversize objects:** moto ignores the POST policy (BLOCKERS.md B1), so `/complete` also checks the HEAD size and
+  returns 413. The object is left in place: the IAM policy has no DeleteObject, and the 7-day lifecycle rule removes it.
+- **CORS:** a 20-line middleware (`analyzer/middleware.py`) instead of adding django-cors-headers, which is not pinned in
+  VERSIONS.md. It is only needed in dev (Vite on 5173 calling the API on 8000). In the cluster the SPA and the API share one origin.
+- **Throttle storage:** DRF throttling uses Django's cache. LocMemCache would be per gunicorn process, so the 30/hour
+  limit uses `DatabaseCache` in Postgres (`createcachetable` runs with migrations).
+- **The `api` Compose service comes in Phase 5**, when the Dockerfiles are written, so the image is written once. In
+  Phase 2 the API ran on the host (gunicorn) against the Compose postgres, rabbitmq and moto (`make run-api`).
+- **Ports:** every Compose port is published on 127.0.0.1 only (owner's instruction). On the EC2 box, use an SSH tunnel.
+- **Health:** `/api/health` checks the DB (`SELECT 1`) and the broker (AMQP connect, 2 s timeout) and returns 503 if either fails.
