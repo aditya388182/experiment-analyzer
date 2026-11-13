@@ -1,0 +1,55 @@
+{
+  "test_churn_rate": 0.504959630911188,
+  "season_snapshot_churn_rate": 0.41915085817524844,
+  "recent_train_churn_rate": 0.6341632088520055,
+  "variants": {
+    "uncalibrated": {
+      "roc_auc": 0.7694432511621907,
+      "pr_auc": 0.7358028205429128,
+      "brier": 0.2073672148572695,
+      "calibration_error": 0.11548084908172158,
+      "mean_predicted": 0.6204404799929096,
+      "mean_gap_points": 11.548084908172163,
+      "calibration_error_ci": [
+        0.10222158289306545,
+        0.1282647690031128
+      ]
+    },
+    "same_season_platt": {
+      "roc_auc": 0.7694432511621907,
+      "pr_auc": 0.7358028205429128,
+      "brier": 0.21535794506675635,
+      "calibration_error": 0.13735012871002783,
+      "mean_predicted": 0.3676095022011602,
+      "mean_gap_points": -13.735012871002784,
+      "calibration_error_ci": [
+        0.12504554762030168,
+        0.15003651274729757
+      ]
+    },
+    "same_season_isotonic": {
+      "roc_auc": 0.7687202214580485,
+      "pr_auc": 0.7248787569970261,
+      "brier": 0.21513644657822936,
+      "calibration_error": 0.1375542704058696,
+      "mean_predicted": 0.3674053605053184,
+      "mean_gap_points": -13.755427040586959,
+      "calibration_error_ci": [
+        0.12509796890522837,
+        0.14967487402249519
+      ]
+    },
+    "recent_base_rate_shift": {
+      "roc_auc": 0.7694432511621907,
+      "pr_auc": 0.7358028205429128,
+      "brier": 0.21010225689621406,
+      "calibration_error": 0.1258160836842036,
+      "mean_predicted": 0.6307757145953915,
+      "mean_gap_points": 12.58160836842035,
+      "calibration_error_ci": [
+        0.11464504890712461,
+        0.138929994047285
+      ]
+    }
+  }
+}

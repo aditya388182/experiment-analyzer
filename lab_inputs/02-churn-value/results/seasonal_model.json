@@ -1,0 +1,28 @@
+{
+  "train_snapshots": 13,
+  "train_rows": 49673,
+  "variants": {
+    "monthly_snapshots_no_season_feature": {
+      "roc_auc": 0.77183479457782,
+      "pr_auc": 0.7376331047943017,
+      "brier": 0.20503842152210738,
+      "calibration_error": 0.10812801616875162,
+      "mean_gap_points": 10.812801616875156,
+      "calibration_error_ci": [
+        0.09533976241232067,
+        0.1210522520953299
+      ]
+    },
+    "monthly_snapshots_with_season_feature": {
+      "roc_auc": 0.7694744373396252,
+      "pr_auc": 0.7437231442854669,
+      "brier": 0.20319616071111615,
+      "calibration_error": 0.0915893350071056,
+      "mean_gap_points": -8.939360651335459,
+      "calibration_error_ci": [
+        0.0805855857982964,
+        0.10597728844304526
+      ]
+    }
+  }
+}

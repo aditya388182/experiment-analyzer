@@ -1,0 +1,103 @@
+{
+  "settings": {
+    "alpha": 0.05,
+    "look_every": 500,
+    "tau": 0.01,
+    "n_max_per_arm": 21000,
+    "reps": 4000
+  },
+  "visit": {
+    "control_rate": 0.10616727682343002,
+    "null": {
+      "looks": 42,
+      "msprt_reject_rate": 0.0145,
+      "naive_peeking_reject_rate": 0.31875,
+      "fixed_horizon_reject_rate": 0.0505,
+      "msprt_mean_sample_per_arm": 20836.75,
+      "msprt_median_sample_per_arm": 21000.0,
+      "sample_saving_vs_fixed": 0.007773809523809572
+    },
+    "observed_mens": {
+      "treat_rate": 0.18275684047496127,
+      "looks": 42,
+      "msprt_reject_rate": 1.0,
+      "naive_peeking_reject_rate": 1.0,
+      "fixed_horizon_reject_rate": 1.0,
+      "msprt_mean_sample_per_arm": 1221.75,
+      "msprt_median_sample_per_arm": 1000.0,
+      "sample_saving_vs_fixed": 0.9418214285714286
+    },
+    "observed_womens": {
+      "treat_rate": 0.151400383410483,
+      "looks": 42,
+      "msprt_reject_rate": 1.0,
+      "naive_peeking_reject_rate": 1.0,
+      "fixed_horizon_reject_rate": 1.0,
+      "msprt_mean_sample_per_arm": 2012.125,
+      "msprt_median_sample_per_arm": 2000.0,
+      "sample_saving_vs_fixed": 0.9041845238095239
+    },
+    "at_mde": {
+      "effect": 0.008422337718854842,
+      "looks": 42,
+      "msprt_reject_rate": 0.503,
+      "naive_peeking_reject_rate": 0.886,
+      "fixed_horizon_reject_rate": 0.792,
+      "msprt_mean_sample_per_arm": 16746.875,
+      "msprt_median_sample_per_arm": 21000.0,
+      "sample_saving_vs_fixed": 0.2025297619047619
+    }
+  },
+  "conversion": {
+    "control_rate": 0.005726086548390125,
+    "null": {
+      "looks": 42,
+      "msprt_reject_rate": 0.014,
+      "naive_peeking_reject_rate": 0.29775,
+      "fixed_horizon_reject_rate": 0.0475,
+      "msprt_mean_sample_per_arm": 20779.5,
+      "msprt_median_sample_per_arm": 21000.0,
+      "sample_saving_vs_fixed": 0.010499999999999954
+    },
+    "observed_mens": {
+      "treat_rate": 0.01253109306800582,
+      "looks": 42,
+      "msprt_reject_rate": 1.0,
+      "naive_peeking_reject_rate": 1.0,
+      "fixed_horizon_reject_rate": 1.0,
+      "msprt_mean_sample_per_arm": 4079.25,
+      "msprt_median_sample_per_arm": 3500.0,
+      "sample_saving_vs_fixed": 0.80575
+    },
+    "observed_womens": {
+      "treat_rate": 0.008837144059475383,
+      "looks": 42,
+      "msprt_reject_rate": 0.76025,
+      "naive_peeking_reject_rate": 0.9845,
+      "fixed_horizon_reject_rate": 0.9655,
+      "msprt_mean_sample_per_arm": 13344.0,
+      "msprt_median_sample_per_arm": 13500.0,
+      "sample_saving_vs_fixed": 0.36457142857142855
+    },
+    "at_mde": {
+      "effect": 0.002062961695993461,
+      "looks": 42,
+      "msprt_reject_rate": 0.3245,
+      "naive_peeking_reject_rate": 0.86,
+      "fixed_horizon_reject_rate": 0.732,
+      "msprt_mean_sample_per_arm": 18142.375,
+      "msprt_median_sample_per_arm": 21000.0,
+      "sample_saving_vs_fixed": 0.13607738095238098
+    }
+  },
+  "replay_conversion_one_random_order": {
+    "mens": {
+      "stopped_at_per_arm": 5000,
+      "of": 21000
+    },
+    "womens": {
+      "stopped_at_per_arm": 12500,
+      "of": 21000
+    }
+  }
+}

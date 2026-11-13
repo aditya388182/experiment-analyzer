@@ -1,0 +1,226 @@
+{
+  "validity": {
+    "arm_counts": [
+      21307,
+      21387,
+      21306
+    ],
+    "srm_p": 0.9036929575604196,
+    "max_standardized_mean_difference": 0.011743356726062587,
+    "aa_false_positive_rate": 0.0455,
+    "aa_splits": 2000
+  },
+  "effects": {
+    "mens_visit": {
+      "treat": 0.18275684047496127,
+      "ctrl": 0.10616727682343002,
+      "diff": 0.07658956365153125,
+      "ci_low": 0.06995314760976148,
+      "ci_high": 0.083225979693301,
+      "rel_lift": 0.721404616781399,
+      "se": 0.0033858878117283653,
+      "p": 1.3644511962742905e-112,
+      "p_holm": 8.186707177645743e-112
+    },
+    "mens_conversion": {
+      "treat": 0.01253109306800582,
+      "ctrl": 0.005726086548390125,
+      "diff": 0.006805006519615695,
+      "ci_low": 0.005000070747732389,
+      "ci_high": 0.008609942291499001,
+      "rel_lift": 1.188421876286328,
+      "se": 0.0009208727857351216,
+      "p": 1.50181578515438e-13,
+      "p_holm": 6.00726314061752e-13
+    },
+    "mens_spend": {
+      "treat": 1.422616511005773,
+      "ctrl": 0.6527893551112361,
+      "diff": 0.7698271558945368,
+      "ci_low": 0.4851397325684076,
+      "ci_high": 1.0545145792206658,
+      "rel_lift": 1.1792887703620063,
+      "se": 0.14524656024868676,
+      "p": 1.163814968225482e-07,
+      "boot_ci_low": 0.49724515524304447,
+      "boot_ci_high": 1.0554779109714334,
+      "p_holm": 3.491444904676446e-07
+    },
+    "womens_visit": {
+      "treat": 0.151400383410483,
+      "ctrl": 0.10616727682343002,
+      "diff": 0.045233106587052985,
+      "ci_low": 0.03889349376208028,
+      "ci_high": 0.05157271941202569,
+      "rel_lift": 0.4260550702669102,
+      "se": 0.003234462099090751,
+      "p": 2.4324477023127946e-44,
+      "p_holm": 1.2162238511563973e-43
+    },
+    "womens_conversion": {
+      "treat": 0.008837144059475383,
+      "ctrl": 0.005726086548390125,
+      "diff": 0.003111057511085258,
+      "ci_low": 0.0014985923661468032,
+      "ci_high": 0.004723522656023713,
+      "rel_lift": 0.5433130436982172,
+      "se": 0.0008226770775551195,
+      "p": 0.00015602839508556404,
+      "p_holm": 0.0003120567901711281
+    },
+    "womens_spend": {
+      "treat": 1.0772015710478329,
+      "ctrl": 0.6527893551112361,
+      "diff": 0.4244122159365967,
+      "ci_low": 0.16895678988377877,
+      "ci_high": 0.6798676419894147,
+      "rel_lift": 0.6501518638646863,
+      "se": 0.13033285852919116,
+      "p": 0.0011293971023632475,
+      "boot_ci_low": 0.16751898000529003,
+      "boot_ci_high": 0.6950314386602015,
+      "p_holm": 0.0011293971023632475
+    },
+    "mens_vs_womens_visit": {
+      "treat": 0.18275684047496127,
+      "ctrl": 0.151400383410483,
+      "diff": 0.03135645706447826,
+      "ci_low": 0.024284703628009885,
+      "ci_high": 0.038428210500946636,
+      "rel_lift": 0.20710949574984452,
+      "se": 0.003608000837174793,
+      "p": 3.72474437296819e-18
+    }
+  },
+  "variance_reduction": {
+    "mens_visit": {
+      "corr_with_prior_year_spend": 0.0666624689341016,
+      "cuped_variance_removed": 0.004443884764390171,
+      "regression_adjusted_diff": 0.07619113767220792,
+      "raw_diff": 0.07658956365153125,
+      "regression_variance_removed": 0.029294182709431404
+    },
+    "mens_spend": {
+      "corr_with_prior_year_spend": 0.020922546956069876,
+      "cuped_variance_removed": 0.00043775297112880196,
+      "regression_adjusted_diff": 0.7691842019263486,
+      "raw_diff": 0.7698271558945368,
+      "regression_variance_removed": 0.0022112852893138024
+    },
+    "womens_visit": {
+      "corr_with_prior_year_spend": 0.06334429572804477,
+      "cuped_variance_removed": 0.004012499801281932,
+      "regression_adjusted_diff": 0.045439058799009724,
+      "raw_diff": 0.045233106587052985,
+      "regression_variance_removed": 0.02806253704002759
+    },
+    "womens_spend": {
+      "corr_with_prior_year_spend": 0.0195088785645684,
+      "cuped_variance_removed": 0.00038059634284703936,
+      "regression_adjusted_diff": 0.4268422383147409,
+      "raw_diff": 0.4244122159365967,
+      "regression_variance_removed": -0.001414339025135325
+    }
+  },
+  "power": {
+    "mde_visit_abs": 0.008361637539166614,
+    "mde_conversion_abs": 0.002048093835095838,
+    "n_per_arm": 21306,
+    "alpha": 0.05,
+    "power": 0.8
+  },
+  "uplift": {
+    "mens": {
+      "cv_qini_by_model": {
+        "t_learner_logistic": 0.01807886044464113,
+        "s_learner_logistic": 0.019098390477302996,
+        "t_learner_gradient_boosting": 0.016924302288322268
+      },
+      "selected_model": "s_learner_logistic",
+      "holdout_n": 12784,
+      "holdout_qini": -0.0009423722123169664,
+      "holdout_qini_ci": [
+        -0.047744299483249326,
+        0.04457909020199491
+      ],
+      "holdout_qini_bootstrap_share_above_zero": 0.513,
+      "shuffled_score_qini_mean": 0.00024258544946803017,
+      "capture_top_30pct": 0.30655132634118903,
+      "capture_top_50pct": 0.5099044275107613,
+      "uplift_by_quintile": [
+        {
+          "bucket": 1,
+          "n": 2557,
+          "observed_uplift": 0.08877648333652041
+        },
+        {
+          "bucket": 2,
+          "n": 2557,
+          "observed_uplift": 0.06632719867933004
+        },
+        {
+          "bucket": 3,
+          "n": 2557,
+          "observed_uplift": 0.0640326692047222
+        },
+        {
+          "bucket": 4,
+          "n": 2557,
+          "observed_uplift": 0.07985600859445643
+        },
+        {
+          "bucket": 5,
+          "n": 2556,
+          "observed_uplift": 0.09059111791730474
+        }
+      ],
+      "holdout_average_uplift": 0.07650187734668336
+    },
+    "womens": {
+      "cv_qini_by_model": {
+        "t_learner_logistic": 0.12475826902873126,
+        "s_learner_logistic": 0.12295298874040791,
+        "t_learner_gradient_boosting": 0.12556256555617143
+      },
+      "selected_model": "t_learner_gradient_boosting",
+      "holdout_n": 12808,
+      "holdout_qini": 0.11773501351262028,
+      "holdout_qini_ci": [
+        0.04192969409222925,
+        0.1968346620182598
+      ],
+      "holdout_qini_bootstrap_share_above_zero": 1.0,
+      "shuffled_score_qini_mean": -0.0006211980725496069,
+      "capture_top_30pct": 0.43768884794348273,
+      "capture_top_50pct": 0.6928385206100204,
+      "uplift_by_quintile": [
+        {
+          "bucket": 1,
+          "n": 2562,
+          "observed_uplift": 0.07880250468485762
+        },
+        {
+          "bucket": 2,
+          "n": 2562,
+          "observed_uplift": 0.053573093638035155
+        },
+        {
+          "bucket": 3,
+          "n": 2562,
+          "observed_uplift": 0.051219422969051034
+        },
+        {
+          "bucket": 4,
+          "n": 2561,
+          "observed_uplift": 0.018996876139733276
+        },
+        {
+          "bucket": 5,
+          "n": 2561,
+          "observed_uplift": 0.022536516939590773
+        }
+      ],
+      "holdout_average_uplift": 0.0451138658360357
+    }
+  }
+}
