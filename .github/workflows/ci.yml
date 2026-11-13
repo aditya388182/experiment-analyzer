@@ -1,0 +1,153 @@
+# CI on every pull request and push to main. Actions are pinned by commit SHA (tag in the comment).
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.13.1"
+  HELM_VERSION: "v4.3.1"
+  KUBECONFORM_VERSION: "v0.8.0"
+
+jobs:
+  python-lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: scripts/install_python.sh
+      - name: ruff (abkit)
+        working-directory: abkit
+        run: uv run --frozen ruff check . && uv run --frozen ruff format --check .
+      - name: ruff (backend)
+        working-directory: backend
+        run: uv run --frozen ruff check . && uv run --frozen ruff format --check .
+
+  abkit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: scripts/install_python.sh
+      - name: pytest (equivalence, properties, edge cases, lab reproduction)
+        working-directory: abkit
+        run: uv run --frozen pytest -q --junitxml=../junit-abkit.xml
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: junit-abkit
+          path: junit-abkit.xml
+
+  backend:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16.16-trixie@sha256:30551eca978d79ccf49d037bc297b5670baea61a04ceca42ff7fd3100163d3ce
+        env:
+          POSTGRES_DB: analyzer
+          POSTGRES_USER: analyzer
+          POSTGRES_PASSWORD: change-me-dev-only # CI-only throwaway database
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U analyzer -d analyzer" --health-interval 3s --health-timeout 3s --health-retries 20
+      rabbitmq:
+        image: rabbitmq:4.3.7-management-alpine@sha256:eb338b3fc8f5c251028c0022ac0de3fe1db2d599d1c6a08b45898f756f248881
+        env:
+          RABBITMQ_DEFAULT_USER: analyzer
+          RABBITMQ_DEFAULT_PASS: change-me-dev-only # CI-only throwaway broker
+        ports: ["5672:5672"]
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping" --health-interval 5s --health-timeout 5s --health-retries 30
+      moto:
+        image: motoserver/moto:5.2.5@sha256:59a1965d845249b04def37a0e2565f9cc6c44543cb89b68e90f28f344b3b0d1a
+        ports: ["5000:5000"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: ${{ env.UV_VERSION }}
+      - run: scripts/install_python.sh
+      - name: pytest (unit, Celery eager mode, in-test moto)
+        working-directory: backend
+        run: uv run --frozen pytest -q --junitxml=../junit-backend.xml
+      - name: integration (real RabbitMQ + Celery worker + API)
+        run: scripts/integration.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: junit-backend
+          path: junit-backend.xml
+
+  frontend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: tsc
+        run: npx tsc -b --noEmit
+      - name: eslint
+        run: npx eslint --max-warnings 0 .
+      - name: vitest
+        run: npx vitest run --reporter=default --reporter=junit --outputFile.junit=../junit-frontend.xml
+      - run: npm run build
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: junit-frontend
+          path: junit-frontend.xml
+
+  images:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        image: [api, web]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: deploy/docker/${{ matrix.image }}.Dockerfile
+          platforms: linux/amd64
+          push: false
+          build-args: GIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  helm:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: ${{ env.HELM_VERSION }}
+      - name: install kubeconform (checksum-verified)
+        run: |
+          base=https://github.com/yannh/kubeconform/releases/download/${KUBECONFORM_VERSION}
+          curl -fsSLO "$base/kubeconform-linux-amd64.tar.gz"
+          curl -fsSL "$base/CHECKSUMS" | grep ' kubeconform-linux-amd64.tar.gz$' | sha256sum -c -
+          tar -xzf kubeconform-linux-amd64.tar.gz kubeconform
+          sudo install -m 0755 kubeconform /usr/local/bin/kubeconform
+      - name: helm lint and kubeconform
+        run: scripts/helm_check.sh

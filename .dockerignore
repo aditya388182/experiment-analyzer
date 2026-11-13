@@ -1,0 +1,18 @@
+# Build context is the repo root; only what the Dockerfiles COPY matters, but keep the context small.
+.git
+**/.venv
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.hypothesis
+frontend/dist
+frontend/coverage
+lab_inputs
+docs
+results
+deploy/helm
+.env
+.env.*
+backend/analyzer/tests
+abkit/tests

@@ -16,8 +16,9 @@ beforeAll(() => {
   server.listen({ onUnhandledFrame: "error" }); // msw 3 renamed onUnhandledRequest
 });
 afterEach(() => {
-  server.resetHandlers();
+  // Unmount first: a page still polling (e.g. /analyses/:id) must not fire after its handlers are reset.
   cleanup();
+  server.resetHandlers();
 });
 afterAll(() => {
   server.close();

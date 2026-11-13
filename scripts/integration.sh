@@ -6,13 +6,18 @@ cd "$(dirname "$0")/../backend"
 set -a; . ../scripts/dev.env; set +a
 export DATABASE_URL=postgres://analyzer:change-me-dev-only@127.0.0.1:5432/analyzer_it
 export S3_BUCKET=experiment-analyzer-it
+export CELERY_QUEUE=integration-$$   # own queue: a dev worker on the same broker must not take these jobs
 export GIT_SHA=${GIT_SHA:-$(git rev-parse --short HEAD)}
-COMPOSE="docker compose -f ../deploy/compose.dev.yml"
 LOGDIR=${LOGDIR:-$(mktemp -d)}
 
 echo "== fresh database analyzer_it"
-$COMPOSE exec -T postgres psql -U analyzer -d analyzer -q -c "DROP DATABASE IF EXISTS analyzer_it WITH (FORCE)"
-$COMPOSE exec -T postgres psql -U analyzer -d analyzer -q -c "CREATE DATABASE analyzer_it"
+# Recreate the test database over TCP (works with Compose and with CI service containers).
+uv run python - <<'PY'
+import psycopg
+with psycopg.connect("postgresql://analyzer:change-me-dev-only@127.0.0.1:5432/analyzer", autocommit=True) as c:
+    c.execute("DROP DATABASE IF EXISTS analyzer_it WITH (FORCE)")
+    c.execute("CREATE DATABASE analyzer_it")
+PY
 uv run python manage.py migrate -v0
 uv run python manage.py createcachetable
 uv run python manage.py seed_samples
@@ -30,6 +35,7 @@ for _ in $(seq 60); do
 done
 
 echo "== pytest -m integration"
-INTEGRATION_API=http://127.0.0.1:8001 uv run pytest -m integration -s -v -p no:logging analyzer/tests/test_integration.py
+INTEGRATION_API=http://127.0.0.1:8001 uv run pytest -m integration -s -v -p no:logging \
+  ${JUNIT_XML:+--junitxml="$JUNIT_XML"} analyzer/tests/test_integration.py
 echo "== worker log: task lines"
 grep -E "Task analyzer.tasks.run_analysis\[.*\] (received|succeeded|retry)" "$LOGDIR/worker.log" | sed -E 's/^\[[^]]*\] //' || true

@@ -71,3 +71,18 @@ All downloads were checked against the publisher's SHA-256 checksums.
   - Backend after the Phase 4 fix: `73 passed, 5 deselected`.
 - Found and fixed via the screenshot run: metric-type guess on an all-zero preview (D11).
 - Next: Phase 5 (Dockerfiles, compose with all services, make dev/test, ci.yml).
+
+### Phase 5: Docker and CI — DONE (except the GitHub run link: BLOCKERS.md B2)
+- `deploy/docker/api.Dockerfile` (api + worker, multi-stage, uv, uid 10001), `web.Dockerfile` (node build → nginx-unprivileged,
+  uid 101), `nginx.conf` / `nginx.dev.conf`, digest-pinned base images, healthchecks. `deploy/compose.dev.yml` with all
+  services (postgres, rabbitmq, moto, migrate, api, worker, web), all on 127.0.0.1. `make dev`, `make test`, `make lint`,
+  `make ci`, `make results-tests`. `.github/workflows/ci.yml` (7 jobs, actions pinned by SHA).
+- **Check (local equivalent of CI; a GitHub run needs a push → B2):**
+  - `make dev` → all 7 services healthy; api/worker run as uid 10001, web as uid 101; SPA fallback 200, missing
+    asset 404; sample analysis through nginx → SUCCEEDED, 7.66 pts verdict.
+  - `make lint-python lint-frontend` → ruff clean (abkit, backend), tsc clean, eslint 0 warnings.
+  - `make results-tests` → abkit 164, backend 73, integration 5, frontend 32: **274 passed, 0 failed**
+    (`results/tests.json`).
+  - `make build-images` → api 732 MB, web 91 MB.
+  - ci.yml parses; all `uses:` pinned to 40-char SHAs.
+- Next: Phase 6 (Helm chart, k3d install, ingress sample analysis, HPA).

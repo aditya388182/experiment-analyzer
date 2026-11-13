@@ -37,3 +37,6 @@ deploy/helm/**/charts/*.tgz
 .idea/
 .vscode/
 *.swp
+
+# Local CI artifacts (JUnit XML)
+build/

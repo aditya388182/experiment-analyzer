@@ -15,3 +15,16 @@ What is tested locally instead:
 **To do with a real bucket (after `deploy/aws/s3-setup.sh`):** run `make s3-policy-check S3_BUCKET=<your bucket>`
 with credentials allowed to `s3:PutObject` on `uploads/*`. It posts a 50 MB + 1 byte file and expects S3's
 `EntityTooLarge` (400). Paste the output into `results/` as evidence.
+
+## B2. A green CI run needs the repo pushed to GitHub (Phase 5 Check)
+`.github/workflows/ci.yml` is written, every action is pinned by commit SHA, and the YAML was checked to parse with
+every `uses:` pinned. Every command in it was run locally with the same versions (`make lint`, `make test`,
+`make test-integration`, `make build-images`, `scripts/helm_check.sh`); see PROGRESS.md. I did not push, so there
+is no CI run link yet. (actionlint could not be run on the box: running a downloaded binary was blocked, so the
+GitHub-specific syntax is only checked by a YAML parse.)
+
+**What you do:**
+1. Push the repo (or open a PR): `git push -u origin main`.
+2. GitHub → the repo → **Actions** tab → the `ci` run. All 7 jobs (python-lint, abkit, backend, frontend, images ×2,
+   helm) should be green. If a job fails on GitHub but passes locally, paste me the log.
+3. Copy the run URL into the README's CI badge section (Phase 8 left a placeholder).

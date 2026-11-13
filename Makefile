@@ -51,3 +51,44 @@ run-web: ## Vite dev server on 127.0.0.1:5173, proxying /api to 127.0.0.1:8000
 
 screenshots: ## docs/screenshots from a running stack (needs PLAYWRIGHT_DIR with playwright@1.64.1 installed)
 	node scripts/screenshots.mjs $(BASE_URL) docs/screenshots
+
+# ---------- whole project ----------
+COMPOSE := docker compose -f deploy/compose.dev.yml
+.PHONY: python dev dev-down logs build-images test lint lint-python lint-helm ci results-tests
+python: ## install CPython 3.12.16 for uv (DECISIONS.md D1)
+	scripts/install_python.sh
+
+dev: ## full Docker Compose stack: http://localhost:8080 (web), :8000 (api), :5000 (moto), :15672 (rabbitmq UI)
+	GIT_SHA=$$(git rev-parse --short HEAD) $(COMPOSE) up -d --build --wait
+	@echo "web http://localhost:8080   api http://localhost:8000/api/health   rabbitmq http://localhost:15672"
+
+dev-down: ## stop the stack (keeps the postgres volume)
+	$(COMPOSE) down
+
+logs:
+	$(COMPOSE) logs -f api worker
+
+build-images: ## build the api and web images
+	docker build -f deploy/docker/api.Dockerfile --build-arg GIT_SHA=$$(git rev-parse --short HEAD) -t experiment-analyzer-api:local .
+	docker build -f deploy/docker/web.Dockerfile -t experiment-analyzer-web:local .
+
+test: test-abkit test-backend test-frontend ## abkit + backend + frontend tests (backend needs postgres + rabbitmq up)
+
+lint-python: ## ruff check + format check
+	cd abkit && uv run ruff check . && uv run ruff format --check .
+	cd backend && uv run ruff check . && uv run ruff format --check .
+
+lint-helm: ## helm lint + kubeconform (Kubernetes 1.36 schemas)
+	scripts/helm_check.sh
+
+lint: lint-python lint-frontend lint-helm ## ruff, eslint, tsc, helm lint, kubeconform
+
+ci: lint test test-integration build-images ## the same checks as .github/workflows/ci.yml, run locally
+
+results-tests: ## run every suite with JUnit output and write results/tests.json
+	mkdir -p build
+	cd abkit && uv run pytest -q --junitxml=../build/junit-abkit.xml
+	cd backend && uv run pytest -q --junitxml=../build/junit-backend.xml
+	JUNIT_XML=$(CURDIR)/build/junit-integration.xml scripts/integration.sh
+	cd frontend && npx vitest run --reporter=default --reporter=junit --outputFile.junit=../build/junit-frontend.xml
+	cd backend && uv run python ../scripts/test_counts.py ../build

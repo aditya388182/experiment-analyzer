@@ -133,3 +133,24 @@ Fix, without re-enabling a deprecated RabbitMQ feature: `CELERY_CONTROL_QUEUE_EX
   libraries with apt on the build box. For the "queued" shot the worker is really stopped and restarted, and the upload
   shot throttles upload bandwidth (CDP) so a real 3.9 MB upload to moto shows the bar mid-way.
 - **Bundle size:** 849 kB JS (253 kB gzip), mostly Recharts. Route-level code splitting is possible future work.
+
+## D12. Phase 5 (Docker and CI) details
+- **One backend image, two commands.** `api.Dockerfile` builds a uv-locked venv in a build stage and copies only
+  `/opt/venv` and `backend/` into a slim runtime with uid 10001. The worker uses the same image with a `celery` command.
+  Size: 732 MB uncompressed, of which the venv is 423 MB (scipy 109, duckdb 58, django 50, numpy 43, botocore 31 MB).
+  These are real runtime dependencies, so nothing was trimmed.
+- **Base images are pinned by digest** (multi-arch index digests resolved on 2026-11-13), as VERSIONS.md planned for Phase 5.
+- **nginx:** `nginx.conf` (in the image) serves the SPA with an index.html fallback and immutable `/assets/`.
+  `nginx.dev.conf` is mounted only by Compose and adds the `/api` proxy, which matches "proxy /api in dev only".
+- **Compose migrations** run in a one-shot `migrate` service (migrate, createcachetable, seed_samples). api and worker
+  start only after it exits 0, the same pattern as the Helm pre-install hook Job in Phase 6.
+- **Healthchecks:** api → `/api/health/live`; worker → `celery inspect ping` (needs D9's exclusive control queue);
+  web → `/healthz`; postgres, rabbitmq and moto have their own.
+- **Python 3.12.16 in CI** uses `scripts/install_python.sh` (D1 made repeatable: download the pinned standalone
+  build and check a SHA-256 written into the script). The script keeps the tarball in `~/.cache` rather than deleting
+  temp files, following the owner's no-`rm` rule.
+- **Integration runs on its own Celery queue** (`CELERY_QUEUE=integration-<pid>`), so a dev worker on the same broker
+  cannot take its jobs. Found when running integration with the Compose stack up.
+- **results/tests.json** comes from JUnit XML written by every suite (`make results-tests`, `scripts/test_counts.py`).
+- **Frontend test teardown order:** unmount, then reset MSW handlers. The other order let a still-polling page fire
+  one unhandled request (a rare race, seen once in about 10 runs).

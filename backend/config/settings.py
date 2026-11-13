@@ -68,6 +68,9 @@ REST_FRAMEWORK = {
 
 # Celery (RabbitMQ). VERSIONS.md concern 4: classic durable queue, prefetch 1 with late acks.
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+# Queue name is configurable so an integration run can share a broker with a dev stack without its jobs being
+# taken by the other stack's worker.
+CELERY_TASK_DEFAULT_QUEUE = env("CELERY_QUEUE", default="celery")
 CELERY_TASK_ACKS_LATE = True
 CELERY_TASK_REJECT_ON_WORKER_LOST = True
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1

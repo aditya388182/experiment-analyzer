@@ -1,10 +1,37 @@
-# Dev stack: `make dev` (from the repo root). Values come from ../.env (copy .env.example).
-# All ports are published on 127.0.0.1 only. On a remote box, reach them with an SSH tunnel.
+# Dev stack: `make dev` from the repo root. Dummy dev-only credentials; override any of them in ../.env.
+# All ports are published on 127.0.0.1 only. On a remote box, reach them with an SSH tunnel:
+#   ssh -L 8080:127.0.0.1:8080 -L 5000:127.0.0.1:5000 <box>   then open http://localhost:8080
 name: experiment-analyzer
+
+x-app-env: &app-env
+  DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-dev-only}
+  DJANGO_DEBUG: "false"
+  DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,api}
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:8080}
+  DATABASE_URL: postgres://${POSTGRES_USER:-analyzer}:${POSTGRES_PASSWORD:-change-me-dev-only}@postgres:5432/${POSTGRES_DB:-analyzer}
+  CELERY_BROKER_URL: amqp://${RABBITMQ_DEFAULT_USER:-analyzer}:${RABBITMQ_DEFAULT_PASS:-change-me-dev-only}@rabbitmq:5672//
+  S3_BUCKET: ${S3_BUCKET:-experiment-analyzer-dev}
+  AWS_REGION: ${AWS_REGION:-us-east-1}
+  S3_ENDPOINT_URL: http://moto:5000
+  # The presigned POST URL is opened by the browser, so it must use a host the browser can reach.
+  S3_PUBLIC_ENDPOINT_URL: ${S3_PUBLIC_ENDPOINT_URL:-http://localhost:5000}
+  S3_CREATE_BUCKET: "true"
+  AWS_ACCESS_KEY_ID: testing
+  AWS_SECRET_ACCESS_KEY: testing
+  DRF_NUM_PROXIES: "1"
+  GIT_SHA: ${GIT_SHA:-dev}
+
+x-app-image: &app-image
+  image: experiment-analyzer-api:${IMAGE_TAG:-dev}
+  build:
+    context: ..
+    dockerfile: deploy/docker/api.Dockerfile
+    args:
+      GIT_SHA: ${GIT_SHA:-dev}
 
 services:
   postgres:
-    image: postgres:16.16-trixie
+    image: postgres:16.16-trixie@sha256:30551eca978d79ccf49d037bc297b5670baea61a04ceca42ff7fd3100163d3ce
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-analyzer}
       POSTGRES_USER: ${POSTGRES_USER:-analyzer}
@@ -18,7 +45,7 @@ services:
       retries: 20
 
   rabbitmq:
-    image: rabbitmq:4.3.7-management-alpine
+    image: rabbitmq:4.3.7-management-alpine@sha256:eb338b3fc8f5c251028c0022ac0de3fe1db2d599d1c6a08b45898f756f248881
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-analyzer}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-change-me-dev-only}
@@ -30,13 +57,55 @@ services:
       retries: 30
 
   moto:
-    image: motoserver/moto:5.2.5
+    image: motoserver/moto:5.2.5@sha256:59a1965d845249b04def37a0e2565f9cc6c44543cb89b68e90f28f344b3b0d1a
     ports: ["127.0.0.1:5000:5000"]
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:5000/moto-api/')\""]
       interval: 3s
       timeout: 3s
       retries: 20
+
+  migrate:
+    <<: *app-image
+    command: ["sh", "-c", "python manage.py migrate --no-input && python manage.py createcachetable && python manage.py seed_samples"]
+    environment: *app-env
+    depends_on:
+      postgres: { condition: service_healthy }
+      moto: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    <<: *app-image
+    environment: *app-env
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      rabbitmq: { condition: service_healthy }
+
+  worker:
+    <<: *app-image
+    command: ["celery", "-A", "config", "worker", "--loglevel", "INFO", "--concurrency", "2"]
+    environment: *app-env
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      rabbitmq: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping -d celery@$$HOSTNAME --timeout 5 | grep -q pong"]
+      interval: 30s
+      timeout: 15s
+      start_period: 20s
+      retries: 3
+
+  web:
+    image: experiment-analyzer-web:${IMAGE_TAG:-dev}
+    build:
+      context: ..
+      dockerfile: deploy/docker/web.Dockerfile
+    volumes:
+      - ./docker/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      api: { condition: service_healthy }
 
 volumes:
   pgdata:

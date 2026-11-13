@@ -1,0 +1,43 @@
+{
+  "commit": "f96151e949b3cdbed56c653ed9e54293ba37f013",
+  "dirty": true,
+  "generated_at_utc": "2026-11-13T20:43:54Z",
+  "command": "make results-tests",
+  "suites": {
+    "abkit": {
+      "tests": 164,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 164
+    },
+    "backend": {
+      "tests": 73,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 73
+    },
+    "integration": {
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 5
+    },
+    "frontend": {
+      "tests": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 32
+    }
+  },
+  "total": {
+    "tests": 274,
+    "passed": 274,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}
