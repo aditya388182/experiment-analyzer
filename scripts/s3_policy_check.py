@@ -46,13 +46,18 @@ def main() -> int:
     wrong = post(bucket, f"uploads/policy-check-{run}-k.csv", b"a,b\n1,2\n", override_key=f"uploads/other-{run}.csv")
     checks = {
         "small_upload": {"status": small[0], "code": small[1], "expected": 204, "ok": small[0] == 204},
-        "oversize_upload": {"status": big[0], "code": big[1], "expected": "400 EntityTooLarge",
-                            "ok": big[0] == 400 and big[1] == "EntityTooLarge"},
+        "oversize_upload": {
+            "status": big[0],
+            "code": big[1],
+            "expected": "400 EntityTooLarge",
+            "ok": big[0] == 400 and big[1] == "EntityTooLarge",
+        },
         "wrong_key": {"status": wrong[0], "code": wrong[1], "expected": 403, "ok": wrong[0] == 403},
     }
     ok = all(c["ok"] for c in checks.values())
-    results_meta.write("s3_policy_check.json", "scripts/s3_policy_check.py", {"bucket": bucket, "ok": ok,
-                                                                               "checks": checks})
+    results_meta.write(
+        "s3_policy_check.json", "scripts/s3_policy_check.py", {"bucket": bucket, "ok": ok, "checks": checks}
+    )
     for name, c in checks.items():
         print(f"{name}: HTTP {c['status']} {c['code']} (expected {c['expected']}) -> {'OK' if c['ok'] else 'FAIL'}")
     return 0 if ok else 1

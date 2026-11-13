@@ -32,11 +32,14 @@ def multipart(url: str, fields: dict[str, str], path: Path) -> int:
     parts = []
     for k, v in fields.items():
         parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n{v}\r\n'.encode())
-    parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="b.csv"\r\n'
-                 "Content-Type: text/csv\r\n\r\n".encode())
+    parts.append(
+        f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="b.csv"\r\n'
+        "Content-Type: text/csv\r\n\r\n".encode()
+    )
     body = b"".join(parts) + path.read_bytes() + f"\r\n--{boundary}--\r\n".encode()
-    req = urllib.request.Request(url, data=body, method="POST",
-                                 headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    req = urllib.request.Request(
+        url, data=body, method="POST", headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}
+    )
     with urllib.request.urlopen(req, timeout=300) as r:
         return r.status
 
@@ -72,8 +75,15 @@ def main() -> None:
         multipart(up["s3"]["url"], up["s3"]["fields"], path)
         call("POST", f"{api}/api/uploads/{up['upload_id']}/complete")
         uploads.append(up["upload_id"])
-    mapping = {"variant_col": "group", "control_label": "control", "metric_col": "converted",
-               "metric_type": "binary", "pre_period_col": "prior_spend", "planned_split": None, "alpha": 0.05}
+    mapping = {
+        "variant_col": "group",
+        "control_label": "control",
+        "metric_col": "converted",
+        "metric_type": "binary",
+        "pre_period_col": "prior_spend",
+        "planned_split": None,
+        "alpha": 0.05,
+    }
     ids = [call("POST", f"{api}/api/analyses", {"upload_id": u, "mapping": mapping})["analysis_id"] for u in uploads]
     submitted = time.monotonic()
     done: dict[str, dict] = {}
@@ -84,14 +94,19 @@ def main() -> None:
                 if d["status"] in ("SUCCEEDED", "FAILED"):
                     done[aid] = {"status": d["status"], "timings": d["timings"]}
         time.sleep(2)
-    print(json.dumps({
-        "jobs": args.jobs, "rows_per_job": args.rows,
-        "prepare_and_upload_seconds": round(submitted - prep, 1),
-        "all_terminal_seconds_after_submit": round(time.monotonic() - submitted, 1),
-        "succeeded": sum(v["status"] == "SUCCEEDED" for v in done.values()),
-        "failed": sum(v["status"] == "FAILED" for v in done.values()),
-        "job_total_ms": sorted(v["timings"].get("total_ms", 0) for v in done.values()),
-    }))
+    print(
+        json.dumps(
+            {
+                "jobs": args.jobs,
+                "rows_per_job": args.rows,
+                "prepare_and_upload_seconds": round(submitted - prep, 1),
+                "all_terminal_seconds_after_submit": round(time.monotonic() - submitted, 1),
+                "succeeded": sum(v["status"] == "SUCCEEDED" for v in done.values()),
+                "failed": sum(v["status"] == "FAILED" for v in done.values()),
+                "job_total_ms": sorted(v["timings"].get("total_ms", 0) for v in done.values()),
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

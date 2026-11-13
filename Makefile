@@ -77,6 +77,7 @@ test: test-abkit test-backend test-frontend ## abkit + backend + frontend tests 
 lint-python: ## ruff check + format check
 	cd abkit && uv run ruff check . && uv run ruff format --check .
 	cd backend && uv run ruff check . && uv run ruff format --check .
+	cd backend && uv run ruff check ../scripts && uv run ruff format --check ../scripts
 
 lint-helm: ## helm lint + kubeconform (Kubernetes 1.36 schemas)
 	scripts/helm_check.sh
@@ -104,6 +105,12 @@ k3d-deploy: build-images ## build images, import them into k3d, helm upgrade --i
 	kubectl -n experiment-analyzer rollout status deploy/ea-experiment-analyzer-api deploy/ea-experiment-analyzer-worker deploy/ea-experiment-analyzer-web --timeout 5m
 	kubectl -n experiment-analyzer get pods,hpa
 
+k3d-seed: ## re-create the bucket + sample in the in-cluster moto (moto is in-memory: a moto pod restart empties it)
+	kubectl -n experiment-analyzer exec deploy/ea-experiment-analyzer-api -- python manage.py seed_samples
+
+k3d-hpa-burst: ## 20-job burst while sampling the worker HPA; writes results/hpa.json
+	scripts/hpa_burst.sh experiment-analyzer 20
+
 k3d-smoke: ## sample analysis through the k3d ingress (127.0.0.1:8081)
 	python3 scripts/smoke.py http://127.0.0.1:8081 --out docs/checks/k3d_smoke.json --command "make k3d-smoke"
 
@@ -114,6 +121,13 @@ k3d-down:
 .PHONY: s3-policy-check
 s3-policy-check: ## real-S3 check of the presigned POST policy: make s3-policy-check S3_BUCKET=<bucket>
 	cd backend && S3_BUCKET=$(S3_BUCKET) uv run python ../scripts/s3_policy_check.py
+
+.PHONY: bullets readme
+bullets: ## resume bullets with every number read from results/*.json (MISSING when absent)
+	python3 scripts/bullets.py
+
+readme: ## regenerate the README numbers table from results/
+	python3 scripts/readme_numbers.py
 
 results-tests: ## run every suite with JUnit output and write results/tests.json
 	mkdir -p build

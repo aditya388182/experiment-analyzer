@@ -531,3 +531,22 @@ Every phase ends with a **Check**: output Claude Code must show you. Don't move 
 9. How does the HPA decide to scale, and what is its limit here? (CPU target; RabbitMQ queue depth would be better: KEDA, future work.)
 10. How do the pods reach S3 without keys? (The EC2 instance role through IMDSv2 with hop limit 2.)
 11. What did Claude Code write, and how did you check it? (Plan mode, diffs, tests at every phase.)
+
+---
+
+## 16. Build notes (autonomous build of 2026-11-13)
+
+Where the build differs from this spec, the reason is recorded, never silently changed. Nothing is left as a TODO
+without an entry here.
+
+| Spec item | What was built | Where explained |
+|---|---|---|
+| §8 MDE equivalence "vs `solve_power` at 1e-4" | statsmodels' `solve_power` root-finder stops early (1.3e-4); checked instead against statsmodels' power curve solved to full precision (1e-4), plus raw `solve_power` at 1e-3 | DECISIONS.md D5 |
+| §7 result schema | extra fields (metric, control, `se`, `observed_split`, CUPED `by_comparison`, `null_pre_period` drop reason, extra error codes) | D7, D10 |
+| §13 Phase 6 "migration Job as pre-install/pre-upgrade hook" | `post-install,pre-upgrade`: Postgres is in the same chart, so it does not exist during pre-install hooks | D13 |
+| §12 IAM "PutObject/GetObject only" | kept; the app treats S3's 403-for-missing-key (no ListBucket) as "missing" | D14 |
+| VERSIONS.md concern 4 "remote-control queues allowed in RabbitMQ 4.3" | not true; Celery control/event queues made exclusive | D9 |
+| §13 Phase 5 Check "a green CI run link" | workflow written and every step run locally; needs a push | BLOCKERS.md B2 |
+| §13 Phase 7 (AWS, DNS, live deploy) | scripts and workflow written, not run (needs the owner's accounts) | BLOCKERS.md B1, B3–B8 |
+| §11 `deploy_smoke.json` | produced by `deploy.yml` after the first live deploy | BLOCKERS.md B7 |
+| §11 `hpa.json` (optional) | measured on the local k3d cluster and labelled so | results/hpa.json |

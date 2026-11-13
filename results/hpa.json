@@ -1,0 +1,186 @@
+{
+  "commit": "4ae1326d4fdeb889542b38bdcf796283a2bcf51b",
+  "dirty": true,
+  "generated_at_utc": "2026-11-13T21:12:09Z",
+  "command": "scripts/hpa_burst.sh",
+  "environment": "local k3d cluster (k3d-ea), not production",
+  "hpa": {
+    "min": 1,
+    "max": 3,
+    "target_cpu_percent": 70
+  },
+  "burst": {
+    "jobs": 20,
+    "rows_per_job": 800000,
+    "prepare_and_upload_seconds": 46.9,
+    "all_terminal_seconds_after_submit": 31.3,
+    "succeeded": 20,
+    "failed": 0,
+    "job_total_ms": [
+      2792,
+      3359,
+      5596,
+      6265,
+      8395,
+      8987,
+      11287,
+      11909,
+      14211,
+      14736,
+      17259,
+      17836,
+      20127,
+      20403,
+      23091,
+      23459,
+      25900,
+      26378,
+      28889,
+      29151
+    ]
+  },
+  "replicas_start": 1,
+  "replicas_max": 3,
+  "series": [
+    {
+      "t_s": 0,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 5,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 10,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 15,
+      "replicas": 1,
+      "cpu_percent_of_request": 36
+    },
+    {
+      "t_s": 20,
+      "replicas": 1,
+      "cpu_percent_of_request": 36
+    },
+    {
+      "t_s": 26,
+      "replicas": 1,
+      "cpu_percent_of_request": 36
+    },
+    {
+      "t_s": 31,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 36,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 41,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 46,
+      "replicas": 1,
+      "cpu_percent_of_request": 9
+    },
+    {
+      "t_s": 51,
+      "replicas": 1,
+      "cpu_percent_of_request": 9
+    },
+    {
+      "t_s": 56,
+      "replicas": 1,
+      "cpu_percent_of_request": 9
+    },
+    {
+      "t_s": 61,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 66,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 71,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 77,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 82,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 87,
+      "replicas": 1,
+      "cpu_percent_of_request": 4
+    },
+    {
+      "t_s": 92,
+      "replicas": 1,
+      "cpu_percent_of_request": 323
+    },
+    {
+      "t_s": 97,
+      "replicas": 1,
+      "cpu_percent_of_request": 323
+    },
+    {
+      "t_s": 102,
+      "replicas": 1,
+      "cpu_percent_of_request": 323
+    },
+    {
+      "t_s": 107,
+      "replicas": 3,
+      "cpu_percent_of_request": 201
+    },
+    {
+      "t_s": 112,
+      "replicas": 3,
+      "cpu_percent_of_request": 201
+    },
+    {
+      "t_s": 117,
+      "replicas": 3,
+      "cpu_percent_of_request": 6
+    },
+    {
+      "t_s": 122,
+      "replicas": 3,
+      "cpu_percent_of_request": 6
+    },
+    {
+      "t_s": 127,
+      "replicas": 3,
+      "cpu_percent_of_request": 6
+    },
+    {
+      "t_s": 132,
+      "replicas": 3,
+      "cpu_percent_of_request": 6
+    },
+    {
+      "t_s": 137,
+      "replicas": 3,
+      "cpu_percent_of_request": 6
+    }
+  ]
+}

@@ -9,8 +9,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import results_meta  # noqa: E402
 
-SUITES = {"abkit": "junit-abkit.xml", "backend": "junit-backend.xml", "integration": "junit-integration.xml",
-          "frontend": "junit-frontend.xml"}
+SUITES = {
+    "abkit": "junit-abkit.xml",
+    "backend": "junit-backend.xml",
+    "integration": "junit-integration.xml",
+    "frontend": "junit-frontend.xml",
+}
 
 
 def counts(path: Path) -> dict[str, int]:

@@ -38,7 +38,8 @@ await shot("02-analysis-sample-visit");
 
 // 3. Home with the recent list.
 await page.goto(`${BASE}/`);
-await page.getByText("Recent analyses").waitFor();
+await page.getByRole("heading", { name: "Recent analyses" }).waitFor();
+await page.getByText("Loading recent analyses…").waitFor({ state: "detached" });
 await page.waitForTimeout(800);
 await shot("01-home");
 
@@ -74,6 +75,7 @@ await shot("05-upload-preview-mapping");
 // 6. Submit with the worker stopped: the analysis waits in the queue (status timeline), then runs.
 run(process.env.STOP_WORKER_CMD);
 await page.getByLabel("Pre-period column (optional)").selectOption("");
+await page.getByLabel("Significance level (alpha)").fill("0.1"); // new mapping hash -> a fresh job, not a reuse
 await page.getByRole("button", { name: "Analyze" }).click();
 await page.getByText("Waiting for a worker…").waitFor({ timeout: 15_000 });
 await shot("06-analysis-queued", { fullPage: false });
