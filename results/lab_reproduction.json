@@ -1,0 +1,97 @@
+{
+  "commit": "c0c675e4f668a9c234baa2774441aa0bade0b0b1",
+  "dirty": false,
+  "generated_at_utc": "2026-11-13T09:15:47Z",
+  "command": "make results-abkit",
+  "dataset": "backend/samples/hillstrom.csv",
+  "dataset_sha256": "27bab8c5d3669f26ec08ebb50a0a78317542f29501156f2e2af6781fab4cd7e2",
+  "lab_file": "backend/reports/data/exp_results.json",
+  "abkit_version": "0.1.0",
+  "mapping": {
+    "variant_col": "segment",
+    "control_label": "No E-Mail",
+    "metric_col": "visit",
+    "metric_type": "binary",
+    "pre_period_col": "history",
+    "alpha": 0.05
+  },
+  "tolerance": 1e-09,
+  "comparisons": {
+    "mens_visit.diff": {
+      "app": 0.07658956365153125,
+      "lab": 0.07658956365153125,
+      "abs_diff": 0.0
+    },
+    "mens_visit.ci_low": {
+      "app": 0.06995314760976148,
+      "lab": 0.06995314760976148,
+      "abs_diff": 0.0
+    },
+    "mens_visit.ci_high": {
+      "app": 0.083225979693301,
+      "lab": 0.083225979693301,
+      "abs_diff": 0.0
+    },
+    "mens_visit.p": {
+      "app": 1.3644511962742905e-112,
+      "lab": 1.3644511962742905e-112,
+      "abs_diff": 0.0
+    },
+    "mens_visit.rel_lift": {
+      "app": 0.721404616781399,
+      "lab": 0.721404616781399,
+      "abs_diff": 0.0
+    },
+    "womens_visit.diff": {
+      "app": 0.045233106587052985,
+      "lab": 0.045233106587052985,
+      "abs_diff": 0.0
+    },
+    "womens_visit.ci_low": {
+      "app": 0.03889349376208028,
+      "lab": 0.03889349376208028,
+      "abs_diff": 0.0
+    },
+    "womens_visit.ci_high": {
+      "app": 0.05157271941202569,
+      "lab": 0.05157271941202569,
+      "abs_diff": 0.0
+    },
+    "srm_p": {
+      "app": 0.9036929575604196,
+      "lab": 0.9036929575604196,
+      "abs_diff": 0.0
+    },
+    "mde_visit_abs": {
+      "app": 0.008361637539166614,
+      "lab": 0.008361637539166614,
+      "abs_diff": 0.0
+    },
+    "mens_visit.cuped_corr": {
+      "app": 0.0666624689341016,
+      "lab": 0.0666624689341016,
+      "abs_diff": 0.0
+    },
+    "mens_visit.cuped_variance_removed": {
+      "app": 0.004443884764390171,
+      "lab": 0.004443884764390171,
+      "abs_diff": 0.0
+    }
+  },
+  "max_abs_diff": 0.0,
+  "arm_counts": {
+    "No E-Mail": 21306,
+    "Mens E-Mail": 21307,
+    "Womens E-Mail": 21387
+  },
+  "headline": {
+    "mens_visit_diff_pts": 7.66,
+    "mens_visit_ci_pts": [
+      7.0,
+      8.32
+    ],
+    "srm_p": 0.9037
+  },
+  "verdict": "Mens E-Mail increased visit rate by 7.66 percentage points (95% CI 7.00 to 8.32) vs No E-Mail. Womens E-Mail increased visit rate by 4.52 percentage points (95% CI 3.89 to 5.16) vs No E-Mail.",
+  "cuped_message": "CUPED not helpful here (correlation 0.07, variance removed 0.4%)"
+}

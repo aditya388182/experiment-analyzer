@@ -1,0 +1,84 @@
+{
+  "commit": "c0c675e4f668a9c234baa2774441aa0bade0b0b1",
+  "dirty": false,
+  "generated_at_utc": "2026-11-13T09:15:47Z",
+  "command": "make results-abkit",
+  "equivalence": {
+    "cuped": {
+      "reference": "theta vs numpy.polyfit and statsmodels OLS slope; variance removed vs corr^2",
+      "tolerance": "1e-9",
+      "datasets": 20,
+      "difference_kind": "absolute",
+      "max_diff": 4.440892098500626e-16
+    },
+    "diff_in_means": {
+      "reference": "scipy.stats.ttest_ind(equal_var=False) p-value and .confidence_interval()",
+      "tolerance": "1e-9",
+      "datasets": 20,
+      "difference_kind": "absolute",
+      "max_diff": 2.220446049250313e-16
+    },
+    "holm": {
+      "reference": "statsmodels.stats.multitest.multipletests(method='holm')",
+      "tolerance": "1e-12",
+      "datasets": 20,
+      "difference_kind": "absolute",
+      "max_diff": 0.0
+    },
+    "mde_two_proportions": {
+      "reference": "statsmodels NormalIndPower power curve, solved with brentq to 1e-15, x sqrt(p(1-p)) (statsmodels also counts the far tail)",
+      "tolerance": "1e-4 relative",
+      "datasets": 20,
+      "difference_kind": "relative",
+      "max_diff": 2.591322827152393e-05
+    },
+    "mde_two_proportions_vs_solve_power_raw": {
+      "reference": "statsmodels NormalIndPower().solve_power as shipped (its root-finder stops early)",
+      "tolerance": "1e-3 relative",
+      "datasets": 20,
+      "difference_kind": "relative",
+      "max_diff": 0.00013167982108874135
+    },
+    "sample_size_two_proportions": {
+      "reference": "round trip through mde_two_proportions; smallest n where statsmodels NormalIndPower power >= 0.8",
+      "tolerance": "round trip exact (1 unit); vs statsmodels within max(1 unit, 1e-5 relative)",
+      "datasets": 20,
+      "difference_kind": "relative (n vs statsmodels n)",
+      "max_diff": 7.088176920895946e-05
+    },
+    "srm_test": {
+      "reference": "scipy.stats.chisquare",
+      "tolerance": "1e-12",
+      "datasets": 20,
+      "difference_kind": "absolute",
+      "max_diff": 0.0
+    }
+  },
+  "hypothesis": {
+    "examples_by_property": {
+      "ci_contains_point_estimate": 300,
+      "cuped_variance_removed_in_0_1": 300,
+      "holm_monotone": 300,
+      "mde_sample_size_round_trip": 300,
+      "srm_52_48_flagged": 1,
+      "srm_true_50_50_seeds": 100,
+      "swap_flips_sign_and_ci": 300
+    },
+    "total_examples": 1601
+  },
+  "edge_cases_covered": [
+    "SRM p < 0.001 -> verdict starts with the do-not-trust sentence",
+    "arm with n < 2 -> ARM_TOO_SMALL",
+    "arm with n < 30 -> warning only",
+    "constant metric in every arm -> CONSTANT_METRIC",
+    "control label missing -> CONTROL_NOT_FOUND",
+    "control mean 0 -> rel_lift null",
+    "missing pre-period values -> rows dropped and counted (null_pre_period)",
+    "more than 10 arms -> TOO_MANY_ARMS",
+    "non-binary values in a binary metric -> dropped and counted (non_binary_value)",
+    "planned_split length differs from arm count -> PLANNED_SPLIT_MISMATCH",
+    "single_arm -> SINGLE_ARM",
+    "zero variance in both arms of one comparison -> degenerate + warning"
+  ],
+  "tests_passed": 164
+}
