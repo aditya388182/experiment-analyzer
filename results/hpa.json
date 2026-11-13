@@ -1,7 +1,7 @@
 {
-  "commit": "4ae1326d4fdeb889542b38bdcf796283a2bcf51b",
-  "dirty": true,
-  "generated_at_utc": "2026-11-13T21:12:09Z",
+  "commit": "ab512b7833823b5ff9c98d7dede29657cb9f7545",
+  "dirty": false,
+  "generated_at_utc": "2026-11-13T21:23:47Z",
   "command": "scripts/hpa_burst.sh",
   "environment": "local k3d cluster (k3d-ea), not production",
   "hpa": {
@@ -12,31 +12,32 @@
   "burst": {
     "jobs": 20,
     "rows_per_job": 800000,
-    "prepare_and_upload_seconds": 46.9,
-    "all_terminal_seconds_after_submit": 31.3,
+    "seed": 2146894496,
+    "prepare_and_upload_seconds": 43.7,
+    "all_terminal_seconds_after_submit": 32.4,
     "succeeded": 20,
     "failed": 0,
     "job_total_ms": [
-      2792,
-      3359,
-      5596,
-      6265,
-      8395,
-      8987,
-      11287,
-      11909,
-      14211,
-      14736,
-      17259,
-      17836,
-      20127,
-      20403,
-      23091,
-      23459,
-      25900,
-      26378,
-      28889,
-      29151
+      2904,
+      3005,
+      7044,
+      7936,
+      10712,
+      11100,
+      13362,
+      13767,
+      15958,
+      16627,
+      18626,
+      19134,
+      23454,
+      23530,
+      26461,
+      26655,
+      29497,
+      29540,
+      29623,
+      29652
     ]
   },
   "replicas_start": 1,
@@ -45,37 +46,37 @@
     {
       "t_s": 0,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 6
     },
     {
       "t_s": 5,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 30
     },
     {
-      "t_s": 10,
+      "t_s": 11,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 30
     },
     {
-      "t_s": 15,
+      "t_s": 16,
       "replicas": 1,
-      "cpu_percent_of_request": 36
+      "cpu_percent_of_request": 30
     },
     {
-      "t_s": 20,
+      "t_s": 21,
       "replicas": 1,
-      "cpu_percent_of_request": 36
+      "cpu_percent_of_request": 6
     },
     {
       "t_s": 26,
       "replicas": 1,
-      "cpu_percent_of_request": 36
+      "cpu_percent_of_request": 6
     },
     {
       "t_s": 31,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 6
     },
     {
       "t_s": 36,
@@ -90,17 +91,17 @@
     {
       "t_s": 46,
       "replicas": 1,
-      "cpu_percent_of_request": 9
+      "cpu_percent_of_request": 4
     },
     {
       "t_s": 51,
       "replicas": 1,
-      "cpu_percent_of_request": 9
+      "cpu_percent_of_request": 4
     },
     {
       "t_s": 56,
       "replicas": 1,
-      "cpu_percent_of_request": 9
+      "cpu_percent_of_request": 4
     },
     {
       "t_s": 61,
@@ -108,54 +109,54 @@
       "cpu_percent_of_request": 4
     },
     {
-      "t_s": 66,
+      "t_s": 67,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 144
     },
     {
-      "t_s": 71,
+      "t_s": 72,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 144
     },
     {
       "t_s": 77,
       "replicas": 1,
-      "cpu_percent_of_request": 4
+      "cpu_percent_of_request": 144
     },
     {
       "t_s": 82,
-      "replicas": 1,
-      "cpu_percent_of_request": 4
+      "replicas": 3,
+      "cpu_percent_of_request": 382
     },
     {
       "t_s": 87,
-      "replicas": 1,
-      "cpu_percent_of_request": 4
+      "replicas": 3,
+      "cpu_percent_of_request": 382
     },
     {
       "t_s": 92,
-      "replicas": 1,
-      "cpu_percent_of_request": 323
+      "replicas": 3,
+      "cpu_percent_of_request": 382
     },
     {
       "t_s": 97,
-      "replicas": 1,
-      "cpu_percent_of_request": 323
+      "replicas": 3,
+      "cpu_percent_of_request": 23
     },
     {
       "t_s": 102,
-      "replicas": 1,
-      "cpu_percent_of_request": 323
+      "replicas": 3,
+      "cpu_percent_of_request": 23
     },
     {
       "t_s": 107,
       "replicas": 3,
-      "cpu_percent_of_request": 201
+      "cpu_percent_of_request": 23
     },
     {
       "t_s": 112,
       "replicas": 3,
-      "cpu_percent_of_request": 201
+      "cpu_percent_of_request": 6
     },
     {
       "t_s": 117,
@@ -163,24 +164,19 @@
       "cpu_percent_of_request": 6
     },
     {
-      "t_s": 122,
+      "t_s": 123,
       "replicas": 3,
       "cpu_percent_of_request": 6
     },
     {
-      "t_s": 127,
+      "t_s": 128,
       "replicas": 3,
-      "cpu_percent_of_request": 6
+      "cpu_percent_of_request": 13
     },
     {
-      "t_s": 132,
+      "t_s": 133,
       "replicas": 3,
-      "cpu_percent_of_request": 6
-    },
-    {
-      "t_s": 137,
-      "replicas": 3,
-      "cpu_percent_of_request": 6
+      "cpu_percent_of_request": 13
     }
   ]
 }

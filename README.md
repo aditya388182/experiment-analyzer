@@ -20,6 +20,18 @@ against SciPy and statsmodels and against the original lab results.
 ## Numbers (generated from `results/`; regenerate with `make readme`)
 
 <!-- numbers:start -->
+| Measure | Value |
+|---|---|
+| Hillstrom reproduction: men's email vs no email, visit rate | +7.66 pts (95% CI 7.00 to 8.32), 64,000 customers |
+| SRM p-value (planned 1/3 split) | 0.9037 |
+| Max |app − lab| over 12 reproduced values | 0.0e+00 |
+| Max |abkit − SciPy/numpy| (Welch, chi-square, CUPED; 20 datasets each) | 4.4e-16 |
+| Hypothesis examples generated | 1,601 |
+| Edge cases covered | 12 |
+| Tests passed (abkit + backend + integration + frontend) | 276 (0 failed) |
+| Churn model test AUC vs recency baseline (lab) | 0.77 vs 0.71 |
+| Deployed sample analysis, submit → SUCCEEDED (s) | MISSING(deploy_smoke.json) |
+| Worker replicas during a 20-job burst (local k3d) | 1 → 3 |
 <!-- numbers:end -->
 
 `make bullets` prints the resume bullets from the same files. A value that has not been measured yet prints `MISSING`.

@@ -1,7 +1,7 @@
 {
-  "commit": "f96151e949b3cdbed56c653ed9e54293ba37f013",
-  "dirty": true,
-  "generated_at_utc": "2026-11-13T20:43:54Z",
+  "commit": "53c4d73b2c8effe5fa50c1253c471982451a7be2",
+  "dirty": false,
+  "generated_at_utc": "2026-11-13T21:18:26Z",
   "command": "make results-tests",
   "suites": {
     "abkit": {
@@ -12,11 +12,11 @@
       "passed": 164
     },
     "backend": {
-      "tests": 73,
+      "tests": 75,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "passed": 73
+      "passed": 75
     },
     "integration": {
       "tests": 5,
@@ -34,8 +34,8 @@
     }
   },
   "total": {
-    "tests": 274,
-    "passed": 274,
+    "tests": 276,
+    "passed": 276,
     "failures": 0,
     "errors": 0,
     "skipped": 0
