@@ -62,6 +62,8 @@ def main() -> None:
     ap.add_argument("api")
     ap.add_argument("--jobs", type=int, default=20)
     ap.add_argument("--rows", type=int, default=800_000)
+    # A new seed per run: identical files would be matched by sha256 and reused, so the burst would do no work.
+    ap.add_argument("--seed", type=int, default=int.from_bytes(uuid.uuid4().bytes[:4], "big"))
     args = ap.parse_args()
     api = args.api.rstrip("/")
     prep = time.monotonic()
@@ -70,7 +72,7 @@ def main() -> None:
     uploads = []
     for i in range(args.jobs):
         path = Path(f"/tmp/burst-{i}.csv")
-        make_csv(path, args.rows, seed=1000 + i)
+        make_csv(path, args.rows, seed=args.seed + i)
         up = call("POST", f"{api}/api/uploads", {"filename": path.name, "size": path.stat().st_size})
         multipart(up["s3"]["url"], up["s3"]["fields"], path)
         call("POST", f"{api}/api/uploads/{up['upload_id']}/complete")
@@ -99,6 +101,7 @@ def main() -> None:
             {
                 "jobs": args.jobs,
                 "rows_per_job": args.rows,
+                "seed": args.seed,
                 "prepare_and_upload_seconds": round(submitted - prep, 1),
                 "all_terminal_seconds_after_submit": round(time.monotonic() - submitted, 1),
                 "succeeded": sum(v["status"] == "SUCCEEDED" for v in done.values()),
