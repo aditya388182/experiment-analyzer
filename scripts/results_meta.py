@@ -22,8 +22,12 @@ def _git(*args: str) -> str:
 
 def meta(command: str) -> dict[str, Any]:
     """``commit`` is HEAD; ``dirty`` says whether tracked files differed from it when the numbers were produced."""
+    # Generated evidence (results/, docs/checks/, README numbers) does not count: "dirty" means the *code* differs.
+    evidence = ("results/", "docs/", "README.md")
     dirty_files = [
-        line[3:] for line in _git("status", "--porcelain", "--untracked-files=no").splitlines() if line.strip()
+        line[3:]
+        for line in _git("status", "--porcelain", "--untracked-files=no").splitlines()
+        if line.strip() and not line[3:].startswith(evidence)
     ]
     return {
         "commit": os.environ.get("GIT_SHA_OVERRIDE") or _git("rev-parse", "HEAD") or "unknown",
